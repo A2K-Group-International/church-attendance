@@ -72,6 +72,8 @@ export default function Registration() {
     const hasEmptyChild = children.some(
       (child) => !child.firstName || !child.lastName || !child.age
     );
+    const randomSixDigit =
+      Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
 
     if (
       !guardianFirstName ||
@@ -108,10 +110,18 @@ export default function Registration() {
             children_age: child.age,
             has_attended: false,
             preferred_time: preferredTime,
+            attendance_code: randomSixDigit
           }))
         );
 
       if (dataError) throw dataError;
+      try {
+        const { error: dataError } = await supabase.from("attendance_pending")
+          .select;
+      } catch (error) {
+        console.error("Error submitting form:", error.message);
+        setError("There was an error submitting the form. Please try again.");
+      }
 
       // Clear form data and handle success
       setGuardianFirstName("");
@@ -121,7 +131,7 @@ export default function Registration() {
       setChildren([{ firstName: "", lastName: "", age: "" }]);
       setActiveTab("guardian");
       setError("");
-      alert("Registration successful!");
+      alert(`Registration successful! Please save your code: ${randomSixDigit}`);
     } catch (error) {
       console.error("Error submitting form:", error.message);
       setError("There was an error submitting the form. Please try again.");

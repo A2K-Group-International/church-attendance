@@ -3,13 +3,15 @@ import Login from "./authentication/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import Registration from "./pages/Registration";
 import Attendance from "./pages/Attendance";
-import ProtectedRoute from "./authentication/ProtectedRoute"; // Corrected import
+import ProtectedRoute from "./authentication/ProtectedRoute";
+import Home from "./pages/Home";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Home />}></Route>
+        <Route path="/login" element={<Login />} />
         <Route
           path="/admin-dashboard"
           element={
