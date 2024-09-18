@@ -31,7 +31,7 @@ export default function Registration() {
   const [guardianFirstName, setGuardianFirstName] = useState("");
   const [guardianLastName, setGuardianLastName] = useState("");
   const [guardianTelephone, setGuardianTelephone] = useState("");
-  const [preferedTime, setPreferedTime] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
   const [children, setChildren] = useState([
     { firstName: "", lastName: "", age: "" },
   ]);
@@ -39,7 +39,8 @@ export default function Registration() {
   const [activeTab, setActiveTab] = useState("guardian");
 
   // Check if Step 1 is complete
-  const isStep1Complete = guardianLastName && guardianFirstName && preferedTime;
+  const isStep1Complete =
+    guardianLastName && guardianFirstName && preferredTime;
 
   const handleNext = () => {
     if (!isStep1Complete) {
@@ -76,7 +77,7 @@ export default function Registration() {
       !guardianFirstName ||
       !guardianLastName ||
       !trimmedGuardianTelephone ||
-      !preferedTime ||
+      !preferredTime ||
       hasEmptyChild
     ) {
       setError("Please complete all fields.");
@@ -106,7 +107,7 @@ export default function Registration() {
             children_first_name: child.firstName,
             children_age: child.age,
             has_attended: false,
-            prefered_time: preferedTime,
+            preferred_time: preferredTime,
           }))
         );
 
@@ -116,7 +117,7 @@ export default function Registration() {
       setGuardianFirstName("");
       setGuardianLastName("");
       setGuardianTelephone("");
-      setPreferedTime("");
+      setPreferredTime("");
       setChildren([{ firstName: "", lastName: "", age: "" }]);
       setActiveTab("guardian");
       setError("");
@@ -175,10 +176,10 @@ export default function Registration() {
                   required
                 />
               </FormLabel>
-              <Label htmlFor="preferedtime">Prefered Time</Label>
+              <Label htmlFor="preferredtime">Prefrered Time</Label>
               <Select
-                onValueChange={(value) => setPreferedTime(value)}
-                value={preferedTime}
+                onValueChange={(value) => setPreferredTime(value)}
+                value={preferredTime}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select Time" />

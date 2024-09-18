@@ -1,7 +1,7 @@
 import { Button } from "./button";
 import { Sheet, SheetTrigger, SheetContent } from "./sheet";
 import { Link } from "react-router-dom";
-import supabase from "../../utils/supabase";
+import Logout from "../../authentication/Logout";
 
 export default function Sidebar({ children }) {
   return (
@@ -30,14 +30,7 @@ export default function Sidebar({ children }) {
             </nav>
           </div>
           <div className="space-y-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => supabase.auth.signOut()}
-            >
-              Sign out
-            </Button>
+            <Logout />
           </div>
         </div>
       </div>
@@ -75,9 +68,7 @@ export default function Sidebar({ children }) {
                     </nav>
                   </div>
                   <div className="space-y-4">
-                    <Button variant="outline" size="sm" className="w-full" >
-                      Sign out
-                    </Button>
+                    <Logout />
                   </div>
                 </div>
               </SheetContent>

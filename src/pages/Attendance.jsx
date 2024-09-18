@@ -39,7 +39,7 @@ export default function Attendance() {
         .select("*")
         .gte("created_at", startOfDay)
         .lte("created_at", endOfDay)
-        .eq("prefered_time", time);
+        .eq("preferred_time", time);
 
       if (status !== "all") {
         query = query.eq("has_attended", status === "attended");
@@ -125,7 +125,7 @@ export default function Attendance() {
   return (
     <Sidebar>
       <main className="p-4 lg:p-8">
-        <h1 className="text-xl font-semibold mb-4">Attendance Draft</h1>
+        <h1 className="text-xl font-semibold mb-4">Attendance</h1>
         <div className="mb-4 flex items-center space-x-4">
           <Popover>
             <PopoverTrigger asChild>
