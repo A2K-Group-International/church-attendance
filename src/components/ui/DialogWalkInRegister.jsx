@@ -136,12 +136,12 @@ export default function DialogWalkInRegister() {
       try {
         const latestSchedule = await fetchLatestSchedule();
         if (latestSchedule.length > 0) {
-          setNextMassDate(latestSchedule[0].schedule); // Access the first item in the array
+          setNextMassDate(latestSchedule[0].schedule); 
         } else {
           setError("No schedule found.");
         }
       } catch (error) {
-        setError("Failed to load schedule.");
+        setError("Failed to load schedule.", error);
       }
     };
   

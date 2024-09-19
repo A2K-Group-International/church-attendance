@@ -4,6 +4,7 @@ import Attendance from "./pages/Attendance";
 import ProtectedRoute from "./authentication/ProtectedRoute";
 import Home from "./pages/Home";
 import UsersPage from "./pages/UsersPage";
+import AdminSchedule from "./pages/AdminSchedule";
 
 function App() {
   return (
@@ -23,6 +24,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Attendance />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/schedule"
+          element={
+            <ProtectedRoute>
+              <AdminSchedule/>
             </ProtectedRoute>
           }
         />
