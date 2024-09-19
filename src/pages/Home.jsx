@@ -1,4 +1,3 @@
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../components/ui/button";
 import childrensChurch from "../assets/images/childrens-church.png";
 import cross from "../assets/svg/cross.svg";
@@ -60,17 +59,4 @@ const Home = () => {
     </>
   );
 };
-
-// <div className="flex h-screen justify-center items-center gap-10">
-//   <Link to="/login">
-//     <Button>Login</Button>
-//   </Link>
-//   <Link to="/registration">
-//     <Button>Registration</Button>
-//   </Link>
-//   <Link to="#">
-//     <Button>Edit/Cancel Registration</Button>
-//   </Link>
-// </div>
-
 export default Home;

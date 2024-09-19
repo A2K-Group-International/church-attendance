@@ -28,52 +28,62 @@ export function DialogLogin() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Login</Button>
+        <Button className="w-full">Login</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Login</DialogTitle>
-          <DialogDescription>Enter your account information</DialogDescription>
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-2xl font-semibold">Login</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Enter your account information to access your dashboard.
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="col-span-3"
-            />
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                Password
+              </Label>
+              <Input
+                id="password"
+                value={password}
+                type="password"
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Password
-            </Label>
-            <Input
-              id="password"
-              value={password}
-              type="password"
-              onChange={(e) => setPassword(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        {isError && <p className="text-red-500 self-start">Invalid login credentials </p>}
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <DialogFooter>
+          {isError && (
+            <p className="text-sm font-medium text-destructive">
+              Invalid login credentials. Please try again.
+            </p>
+          )}
+          <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" className="mt-3 sm:mt-0">
                 Cancel
               </Button>
             </DialogClose>
-            <Button onClick={handleSubmit}>Login</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
           </DialogFooter>
-        )}
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -4,13 +4,19 @@ import Sidebar from "../components/ui/Sidebar";
 import Table from "../layout/Table";
 import { Button } from "../components/ui/button";
 import { Calendar } from "../components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { Switch } from "../components/ui/switch";
 import { format } from "date-fns";
+import { CalendarIcon, Clock, Filter } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const headers = [
   "#",
@@ -24,12 +30,14 @@ const headers = [
 export default function Attendance() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(Date);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState("09:00");
   const [statusFilter, setStatusFilter] = useState("all");
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const itemsPerPage = 7;
 
-  // Fetch data depends on date, time, status
   const fetchData = useCallback(async (date, time, status) => {
     setLoading(true);
     setError(null);
@@ -40,21 +48,21 @@ export default function Attendance() {
 
       let query = supabase
         .from("attendance_pending")
-        .select("*")
+        .select("*", { count: 'exact' })
         .gte("created_at", startOfDay)
         .lte("created_at", endOfDay)
-        .eq("preferred_time", time);
+        .eq("preferred_time", time)
+        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
 
       if (status !== "all") {
         query = query.eq("has_attended", status === "attended");
       }
 
-      const { data: fetchedData, error } = await query;
+      const { data: fetchedData, error, count } = await query;
 
-      if (error) {
-        throw error; // Throw error to be caught by the catch block
-      }
+      if (error) throw error;
 
+      setTotalPages(Math.ceil(count / itemsPerPage)); // Set total pages
       const formattedData = fetchedData.map((item) => ({
         ...item,
         formattedDate: new Date(item.created_at).toLocaleDateString("en-GB", {
@@ -71,14 +79,14 @@ export default function Attendance() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     fetchData(selectedDate, selectedTime, statusFilter);
-  }, [selectedDate, selectedTime, statusFilter, fetchData]);
+  }, [selectedDate, selectedTime, statusFilter, currentPage, fetchData]);
 
   const handleDateChange = (date) => {
-    setSelectedDate(date ? new Date(date) : null);
+    setSelectedDate(date ? new Date(date) : new Date());
   };
 
   const handleTimeChange = (event) => {
@@ -96,11 +104,8 @@ export default function Attendance() {
         .update({ has_attended: checked })
         .eq("id", itemId);
 
-      if (error) {
-        throw error; // Throw error to be caught by the catch block
-      }
+      if (error) throw error;
 
-      // Update local state after successful database update
       const updatedData = data.map((dataItem) =>
         dataItem.id === itemId ? { ...dataItem, has_attended: checked } : dataItem
       );
@@ -112,9 +117,8 @@ export default function Attendance() {
     }
   };
 
-  // Rows for table component
   const rows = data.map((item, index) => [
-    index + 1,
+    index + 1 + (currentPage - 1) * itemsPerPage,
     `${item.children_first_name} ${item.children_last_name}`,
     `${item.guardian_first_name} ${item.guardian_last_name}`,
     item.guardian_telephone,
@@ -129,56 +133,108 @@ export default function Attendance() {
 
   return (
     <Sidebar>
-      <main className="p-4 lg:p-8">
-        <h1 className="text-xl font-semibold mb-4">Attendance</h1>
-        <div className="mb-4 flex items-center space-x-4">
+      <main className="p-4 lg:p-8 max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Attendance</h1>
+          <p className="text-muted-foreground">Manage and track attendance records for children.</p>
+        </div>
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-[280px] justify-start text-left font-normal"
-              >
-                {selectedDate
-                  ? format(new Date(selectedDate), "PPP")
-                  : "Pick a date"}
+              <Button variant="outline" className="w-full sm:w-[200px] justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(selectedDate, "PPP")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
               <Calendar
                 mode="single"
-                selected={selectedDate ? new Date(selectedDate) : undefined}
+                selected={selectedDate}
                 onSelect={handleDateChange}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
-          <select
-            value={selectedTime}
-            onChange={handleTimeChange}
-            className="p-2 border border-gray-300 rounded"
-          >
-            <option value="09:00">09:00 AM</option>
-            <option value="11:00">11:00 AM</option>
-          </select>
-          <select
-            value={statusFilter}
-            onChange={handleStatusChange}
-            className="p-2 border border-gray-300 rounded"
-          >
-            <option value="all">All</option>
-            <option value="attended">Attended</option>
-            <option value="pending">Pending</option>
-          </select>
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <select
+              value={selectedTime}
+              onChange={handleTimeChange}
+              className="p-2 border border-input bg-background rounded-md"
+            >
+              <option value="09:00">09:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+            </select>
+          </div>
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <select
+              value={statusFilter}
+              onChange={handleStatusChange}
+              className="p-2 border border-input bg-background rounded-md"
+            >
+              <option value="all">All</option>
+              <option value="attended">Attended</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
         </div>
-        {loading ? (
-          <p>Loading...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : data.length > 0 ? (
-          <Table headers={headers} rows={rows} />
-        ) : (
-          <p>No data found.</p>
-        )}
+        <div className="bg-card rounded-lg shadow">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading attendance records...</p>
+            </div>
+          ) : error ? (
+            <div className="p-8 text-center">
+              <p className="text-destructive">{error}</p>
+            </div>
+          ) : data.length > 0 ? (
+            <>
+              <Table headers={headers} rows={rows} />
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+                      }}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <PaginationItem key={index}>
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === index + 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(index + 1);
+                        }}
+                      >
+                        {index + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+                      }}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </>
+          ) : (
+            <div className="p-8 text-center">
+              <p className="text-muted-foreground">No attendance records found.</p>
+            </div>
+          )}
+        </div>
       </main>
     </Sidebar>
   );

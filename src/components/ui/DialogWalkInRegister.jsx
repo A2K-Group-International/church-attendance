@@ -45,7 +45,7 @@ export default function DialogWalkInRegister() {
   const [activeTab, setActiveTab] = useState("guardian");
 
   const isStep1Complete =
-    guardianLastName && guardianFirstName && preferredTime;
+    preferredTime && guardianFirstName && guardianLastName && guardianTelephone;
 
   const handleNext = () => {
     if (!isStep1Complete) {
@@ -136,7 +136,7 @@ export default function DialogWalkInRegister() {
       try {
         const latestSchedule = await fetchLatestSchedule();
         if (latestSchedule.length > 0) {
-          setNextMassDate(latestSchedule[0].schedule); 
+          setNextMassDate(latestSchedule[0].schedule);
         } else {
           setError("No schedule found.");
         }
@@ -144,10 +144,10 @@ export default function DialogWalkInRegister() {
         setError("Failed to load schedule.", error);
       }
     };
-  
+
     fetchSchedule();
   }, []);
-  
+
   const formattedDate = nextMassDate
     ? new Date(nextMassDate).toLocaleDateString()
     : "Loading...";
@@ -155,106 +155,159 @@ export default function DialogWalkInRegister() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Walk-In Register</Button>
+        <Button variant="outline" className="w-full">
+          Walk-In Register
+        </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-screen-sm">
+      <DialogContent className="max-w-screen-md h-full lg:h-[42rem] no-scrollbar overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Register</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-semibold">Register</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             Fill up the forms for one-time registration
           </DialogDescription>
         </DialogHeader>
-        <div>
-          <Label>Next mass will be on: {formattedDate}</Label>
-          {error && <p className="text-red-500">{error}</p>}
+        <div className="mb-4">
+          <Label className="text-sm font-medium">
+            Next mass will be on:{" "}
+            <span className="font-semibold">{formattedDate}</span>
+          </Label>
         </div>
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="max-w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="guardian">Step 1</TabsTrigger>
-            <TabsTrigger value="children" disabled={!isStep1Complete}>
-              Step 2
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="guardian" className="text-sm font-medium">
+              Step 1: Guardian
+            </TabsTrigger>
+            <TabsTrigger
+              value="children"
+              disabled={!isStep1Complete}
+              className="text-sm font-medium"
+            >
+              Step 2: Children
             </TabsTrigger>
           </TabsList>
           <TabsContent value="guardian">
             <Card>
               <CardHeader>
-                <CardTitle>Parent Registration</CardTitle>
-                <CardDescription>
-                  Please select your preferred time
+                <CardTitle className="text-xl font-semibold">
+                  Parent Registration
+                </CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">
+                  Please provide your information and select your preferred time
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-4">
+                <div className="flex flex-col md:flex-row gap-x-4">
+                  <FormLabel>
+                    <Label htmlFor="lastName" className="text-sm font-medium">
+                      Last Name
+                    </Label>
+                    <Input
+                      id="lastName"
+                      placeholder="Enter your last name"
+                      value={guardianLastName}
+                      onChange={(e) => setGuardianLastName(e.target.value)}
+                      required
+                      className="mt-1"
+                    />
+                  </FormLabel>
+                  <FormLabel>
+                    <Label htmlFor="firstName" className="text-sm font-medium">
+                      First Name
+                    </Label>
+                    <Input
+                      id="firstName"
+                      placeholder="Enter your first name"
+                      value={guardianFirstName}
+                      onChange={(e) => setGuardianFirstName(e.target.value)}
+                      required
+                      className="mt-1"
+                    />
+                  </FormLabel>
+                  <FormLabel>
+                    <Label htmlFor="telephone" className="text-sm font-medium">
+                      Telephone
+                    </Label>
+                    <Input
+                      id="telephone"
+                      type="number"
+                      value={guardianTelephone}
+                      onChange={(e) => setGuardianTelephone(e.target.value)}
+                      placeholder="123-456-7890"
+                      required
+                      className="mt-1"
+                    />
+                  </FormLabel>
+                </div>
                 <FormLabel>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Last Name"
-                    value={guardianLastName}
-                    onChange={(e) => setGuardianLastName(e.target.value)}
-                    required
-                  />
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="First Name"
-                    value={guardianFirstName}
-                    onChange={(e) => setGuardianFirstName(e.target.value)}
-                    required
-                  />
-                  <Label htmlFor="telephone">Telephone</Label>
-                  <Input
-                    id="telephone"
-                    type="number"
-                    value={guardianTelephone}
-                    onChange={(e) => setGuardianTelephone(e.target.value)}
-                    placeholder="123-45-678"
-                    required
-                  />
+                  <Label
+                    htmlFor="preferredtime"
+                    className="text-sm font-medium"
+                  >
+                    Preferred Time
+                  </Label>
+                  <Select
+                    onValueChange={(value) => setPreferredTime(value)}
+                    value={preferredTime}
+                  >
+                    <SelectTrigger className="mt-1 w-48">
+                      <SelectValue placeholder="Select Time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="9:00am">9:00 AM</SelectItem>
+                      <SelectItem value="11:00am">11:00 AM</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormLabel>
-                <Label htmlFor="preferredtime">Preferred Time</Label>
-                <Select
-                  onValueChange={(value) => setPreferredTime(value)}
-                  value={preferredTime}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select Time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="9:00am">9:00 AM</SelectItem>
-                    <SelectItem value="11:00am">11:00 AM</SelectItem>
-                  </SelectContent>
-                </Select>
               </CardContent>
-              <CardFooter className="flex-col justify-start items-start md:flex-row md:justify-between">
-                <Button onClick={handleNext}>Next</Button>
+              <CardFooter className="flex-col">
+                {error && (
+                  <p className="text-sm font-medium text-destructive mt-2">
+                    {error}
+                  </p>
+                )}
+                <Button onClick={handleNext} className="w-full">
+                  Next
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>
           <TabsContent value="children">
             <Card>
               <CardHeader>
-                <CardTitle>Children Information</CardTitle>
-                <CardDescription>
-                  Please insert your child's information.
+                <CardTitle className="text-xl font-semibold">
+                  Children Information
+                </CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">
+                  Please provide your child's information. You can add multiple
+                  children.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 {children.map((child, index) => (
-                  <div key={index} className="space-y-1">
-                    <div className="flex flex-col space-x-2 items-start md:flex-row md:items-end">
+                  <div
+                    key={index}
+                    className="space-y-4 p-4 bg-muted rounded-lg"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold">
+                        Child {index + 1}
+                      </h4>
                       <Button
                         type="button"
                         onClick={() => handleRemoveChild(index)}
                         disabled={children.length === 1}
+                        size="sm"
+                        variant="outline"
                       >
-                        -
+                        Remove
                       </Button>
-                      <div className="flex-1 space-y-1">
-                        <Label htmlFor={`childrenLastName_${index}`}>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      <FormLabel>
+                        <Label
+                          htmlFor={`childrenLastName_${index}`}
+                          className="text-sm font-medium"
+                        >
                           Last Name
                         </Label>
                         <Input
@@ -264,12 +317,15 @@ export default function DialogWalkInRegister() {
                           onChange={(e) =>
                             handleChangeChild(index, "lastName", e.target.value)
                           }
-                          className="max-w-full"
+                          className="mt-1"
                           required
                         />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <Label htmlFor={`childrenFirstName_${index}`}>
+                      </FormLabel>
+                      <FormLabel>
+                        <Label
+                          htmlFor={`childrenFirstName_${index}`}
+                          className="text-sm font-medium"
+                        >
                           First Name
                         </Label>
                         <Input
@@ -283,10 +339,17 @@ export default function DialogWalkInRegister() {
                               e.target.value
                             )
                           }
+                          className="mt-1"
+                          required
                         />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <Label htmlFor={`age_${index}`}>Age</Label>
+                      </FormLabel>
+                      <FormLabel>
+                        <Label
+                          htmlFor={`age_${index}`}
+                          className="text-sm font-medium"
+                        >
+                          Age
+                        </Label>
                         <Input
                           id={`age_${index}`}
                           type="number"
@@ -294,26 +357,37 @@ export default function DialogWalkInRegister() {
                           onChange={(e) =>
                             handleChangeChild(index, "age", e.target.value)
                           }
+                          className="mt-1"
+                          required
                         />
-                      </div>
+                      </FormLabel>
                     </div>
                   </div>
                 ))}
-                <Button type="button" onClick={handleAddChild}>
-                  +
+                <Button
+                  type="button"
+                  onClick={handleAddChild}
+                  className="w-full"
+                >
+                  Add Another Child
                 </Button>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-        <DialogFooter>
+        {error && (
+          <p className="text-red-500 text-center md:text-end">
+            Please fill all the fields
+          </p>
+        )}
+        <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 items-center gap-2">
           <DialogClose asChild>
             <Button type="button" variant="outline">
               Cancel
             </Button>
           </DialogClose>
           {activeTab === "children" && (
-            <Button onClick={handleSubmit}>Submit</Button>
+            <Button onClick={handleSubmit}>Submit Registration</Button>
           )}
         </DialogFooter>
       </DialogContent>
