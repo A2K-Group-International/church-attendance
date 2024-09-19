@@ -23,12 +23,16 @@ const headers = [
 
 export default function Attendance() {
   const [data, setData] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(Date);
   const [selectedTime, setSelectedTime] = useState("09:00");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [error, setError] = useState(null);
 
   // Fetch data depends on date, time, status
   const fetchData = useCallback(async (date, time, status) => {
+    setLoading(true);
+    setError(null);
     try {
       const today = date ? new Date(date) : new Date();
       const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
@@ -48,8 +52,7 @@ export default function Attendance() {
       const { data: fetchedData, error } = await query;
 
       if (error) {
-        console.error("Error fetching data:", error);
-        return;
+        throw error; // Throw error to be caught by the catch block
       }
 
       const formattedData = fetchedData.map((item) => ({
@@ -63,7 +66,10 @@ export default function Attendance() {
 
       setData(formattedData);
     } catch (error) {
+      setError("Error fetching data. Please try again.");
       console.error("Error in fetchData function:", error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -83,26 +89,25 @@ export default function Attendance() {
     setStatusFilter(event.target.value);
   };
 
-  const handleSwitchChange = async (index, checked) => {
-    const item = data[index];
+  const handleSwitchChange = async (itemId, checked) => {
     try {
       const { error } = await supabase
         .from("attendance_pending")
         .update({ has_attended: checked })
-        .eq("id", item.id);
+        .eq("id", itemId);
 
       if (error) {
-        console.error("Error updating attendance:", error);
-        return;
+        throw error; // Throw error to be caught by the catch block
       }
 
       // Update local state after successful database update
-      const updatedData = data.map((dataItem, idx) =>
-        idx === index ? { ...dataItem, has_attended: checked } : dataItem
+      const updatedData = data.map((dataItem) =>
+        dataItem.id === itemId ? { ...dataItem, has_attended: checked } : dataItem
       );
 
       setData(updatedData);
     } catch (error) {
+      setError("Error updating attendance. Please try again.");
       console.error("Error in handleSwitchChange function:", error);
     }
   };
@@ -115,9 +120,9 @@ export default function Attendance() {
     item.guardian_telephone,
     item.has_attended ? "Attended" : "Pending",
     <Switch
-      key={index}
+      key={item.id}
       checked={item.has_attended}
-      onCheckedChange={(checked) => handleSwitchChange(index, checked)}
+      onCheckedChange={(checked) => handleSwitchChange(item.id, checked)}
       aria-label="Toggle attendance status"
     />,
   ]);
@@ -165,7 +170,11 @@ export default function Attendance() {
             <option value="pending">Pending</option>
           </select>
         </div>
-        {data.length > 0 ? (
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : data.length > 0 ? (
           <Table headers={headers} rows={rows} />
         ) : (
           <p>No data found.</p>

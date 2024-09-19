@@ -2,7 +2,7 @@
 import { Button } from "../components/ui/button";
 import childrensChurch from "../assets/images/childrens-church.png";
 import cross from "../assets/svg/cross.svg";
-import { DialogLogin } from "@/components/ui/DialogLogin";
+import { DialogLogin } from "../authentication/DialogLogin";
 import DialogWalkInRegister from "@/components/ui/DialogWalkInRegister";
 
 const Home = () => {

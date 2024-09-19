@@ -27,6 +27,13 @@ export default function Sidebar({ children }) {
                 <UsersIcon className="h-5 w-5" />
                 Attendance
               </Link>
+              <Link
+                to="/users"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50"
+              >
+                <UsersIcon className="h-5 w-5" />
+                Users
+              </Link>
             </nav>
           </div>
           <div className="space-y-4">
@@ -64,6 +71,13 @@ export default function Sidebar({ children }) {
                       >
                         <UsersIcon className="h-5 w-5" />
                         Attendance
+                      </Link>
+                      <Link
+                        to="/users"
+                        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50"
+                      >
+                        <UsersIcon className="h-5 w-5" />
+                        Users
                       </Link>
                     </nav>
                   </div>

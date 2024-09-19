@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -30,6 +30,7 @@ import {
 } from "../ui/dialog";
 import FormLabel from "../ui/FormLabel";
 import supabase from "../../utils/supabase";
+import { fetchLatestSchedule } from "@/services/apiAuth";
 
 export default function DialogWalkInRegister() {
   const [error, setError] = useState("");
@@ -40,13 +41,12 @@ export default function DialogWalkInRegister() {
   const [children, setChildren] = useState([
     { firstName: "", lastName: "", age: "" },
   ]);
-
+  const [nextMassDate, setNextMassDate] = useState("");
   const [activeTab, setActiveTab] = useState("guardian");
 
-  // Check if Step 1 is complete
   const isStep1Complete =
     guardianLastName && guardianFirstName && preferredTime;
-  // Check if all fields are filled up in step 1 is complete
+
   const handleNext = () => {
     if (!isStep1Complete) {
       setError("Please fill out all fields.");
@@ -77,8 +77,6 @@ export default function DialogWalkInRegister() {
     const hasEmptyChild = children.some(
       (child) => !child.firstName || !child.lastName || !child.age
     );
-    const randomSixDigit =
-      Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
 
     if (
       !guardianFirstName ||
@@ -102,7 +100,6 @@ export default function DialogWalkInRegister() {
     }
 
     try {
-      // Insert the data into Supabase
       const { error: dataError } = await supabase
         .from("attendance_pending")
         .insert(
@@ -115,20 +112,11 @@ export default function DialogWalkInRegister() {
             children_age: child.age,
             has_attended: false,
             preferred_time: preferredTime,
-            attendance_code: randomSixDigit,
           }))
         );
 
       if (dataError) throw dataError;
-      // try {
-      //   const { error: dataError } = await supabase.from("attendance_pending")
-      //     .select;
-      // } catch (error) {
-      //   console.error("Error submitting form:", error.message);
-      //   setError("There was an error submitting the form. Please try again.");
-      // }
 
-      // Clear form data and handle success
       setGuardianFirstName("");
       setGuardianLastName("");
       setGuardianTelephone("");
@@ -136,14 +124,33 @@ export default function DialogWalkInRegister() {
       setChildren([{ firstName: "", lastName: "", age: "" }]);
       setActiveTab("guardian");
       setError("");
-      alert(
-        `Registration successful! Please save your code: ${randomSixDigit}`
-      );
+      alert("Registration successful!");
     } catch (error) {
       console.error("Error submitting form:", error.message);
       setError("There was an error submitting the form. Please try again.");
     }
   };
+
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const latestSchedule = await fetchLatestSchedule();
+        if (latestSchedule.length > 0) {
+          setNextMassDate(latestSchedule[0].schedule); // Access the first item in the array
+        } else {
+          setError("No schedule found.");
+        }
+      } catch (error) {
+        setError("Failed to load schedule.");
+      }
+    };
+  
+    fetchSchedule();
+  }, []);
+  
+  const formattedDate = nextMassDate
+    ? new Date(nextMassDate).toLocaleDateString()
+    : "Loading...";
 
   return (
     <Dialog>
@@ -153,8 +160,14 @@ export default function DialogWalkInRegister() {
       <DialogContent className="max-w-screen-sm">
         <DialogHeader>
           <DialogTitle>Register</DialogTitle>
-          <DialogDescription>Fill up the forms for one time registration</DialogDescription>
+          <DialogDescription>
+            Fill up the forms for one-time registration
+          </DialogDescription>
         </DialogHeader>
+        <div>
+          <Label>Next mass will be on: {formattedDate}</Label>
+          {error && <p className="text-red-500">{error}</p>}
+        </div>
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
@@ -170,7 +183,9 @@ export default function DialogWalkInRegister() {
             <Card>
               <CardHeader>
                 <CardTitle>Parent Registration</CardTitle>
-                <CardDescription>Please select your preferred time</CardDescription>
+                <CardDescription>
+                  Please select your preferred time
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 <FormLabel>
@@ -197,11 +212,10 @@ export default function DialogWalkInRegister() {
                     value={guardianTelephone}
                     onChange={(e) => setGuardianTelephone(e.target.value)}
                     placeholder="123-45-678"
-                    pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
                     required
                   />
                 </FormLabel>
-                <Label htmlFor="preferredtime">Prefrered Time</Label>
+                <Label htmlFor="preferredtime">Preferred Time</Label>
                 <Select
                   onValueChange={(value) => setPreferredTime(value)}
                   value={preferredTime}
@@ -217,7 +231,6 @@ export default function DialogWalkInRegister() {
               </CardContent>
               <CardFooter className="flex-col justify-start items-start md:flex-row md:justify-between">
                 <Button onClick={handleNext}>Next</Button>
-                {error && <p className="text-red-500">{error}</p>}
               </CardFooter>
             </Card>
           </TabsContent>
@@ -251,7 +264,7 @@ export default function DialogWalkInRegister() {
                           onChange={(e) =>
                             handleChangeChild(index, "lastName", e.target.value)
                           }
-                          className="max-w-full "
+                          className="max-w-full"
                           required
                         />
                       </div>
@@ -299,8 +312,9 @@ export default function DialogWalkInRegister() {
               Cancel
             </Button>
           </DialogClose>
-        {activeTab == 'children' && <Button onClick={handleSubmit}>Submit</Button>}
-          {/* {error && <p className="text-red-500">{error}</p>} */}
+          {activeTab === "children" && (
+            <Button onClick={handleSubmit}>Submit</Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

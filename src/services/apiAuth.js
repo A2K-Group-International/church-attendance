@@ -24,3 +24,19 @@ export async function getCurrentUser() {
 
   return data?.user;
 }
+
+export async function fetchLatestSchedule() {
+  try {
+    const { data, error } = await supabase
+      .from("schedule")
+      .select("*")
+      .order("schedule", { ascending: false });
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching schedule:", error.message);
+    throw new Error("Failed to load schedule.");
+  }
+}
