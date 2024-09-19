@@ -29,7 +29,7 @@ export async function fetchLatestSchedule() {
   try {
     const { data, error } = await supabase
       .from("schedule")
-      .select("*")
+      .select("schedule, time")
       .order("id", { ascending: false });
 
     if (error) throw error;
@@ -40,9 +40,11 @@ export async function fetchLatestSchedule() {
     throw new Error("Failed to load schedule.");
   }
 }
-export async function insertNewSchedule(schedule) {
+export async function insertNewSchedule(schedule, time) {
   try {
-    const { data, error } = await supabase.from("schedule").insert(schedule);
+    const { data, error } = await supabase
+      .from("schedule")
+      .insert(schedule, time);
     if (error) throw error;
     return data;
   } catch (error) {

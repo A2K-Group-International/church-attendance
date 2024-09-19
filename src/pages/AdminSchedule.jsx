@@ -12,10 +12,17 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+
+const formatTimeWithoutTimezone = (timeString) => {
+  return timeString.includes("+") ? timeString.split("+")[0] : timeString;
+};
 
 export default function AdminSchedule() {
   const [error, setError] = useState("");
   const [schedule, setSchedule] = useState(null);
+  const [time, setTime] = useState([""]);
+
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
@@ -36,16 +43,30 @@ export default function AdminSchedule() {
   const handleDateSelect = (date) => {
     setSchedule(date);
   };
+  const handleAddTimeInput = () => {
+    setTime([...time, ""]); // Add a new input
+  };
+  const handleRemoveTimeInput = (index) => {
+    if (time.length > 1) {
+      setTime(time.filter((_, i) => i !== index)); // Remove input at the specified index
+    }
+  };
+  const handleChangeTime = (index, value) => {
+    const updatedTimes = [...time];
+    updatedTimes[index] = value; // Update the specific time input
+    setTime(updatedTimes);
+  };
 
   const buttonHandleDateSelected = async () => {
     try {
-      if (!schedule) {
+      if (!schedule && !time) {
         console.error("Schedule is not defined.");
         return;
       }
 
       const newSchedule = await insertNewSchedule({
         schedule: schedule,
+        time: time,
       });
 
       console.log(`New schedule inserted: ${newSchedule}`);
@@ -53,9 +74,9 @@ export default function AdminSchedule() {
       console.log("Error inserting new schedule:", error.message);
     }
   };
-
   // Format the selected date to a readable string
   const formattedDate = schedule ? schedule.toLocaleDateString() : "";
+  const formattedTimes = time.map((t) => formatTimeWithoutTimezone(t));
 
   return (
     <Sidebar>
@@ -70,9 +91,27 @@ export default function AdminSchedule() {
             className="rounded-md"
           />
         </div>
+        {time.map((time, index) => (
+          <div key={index} className="flex space-x-2 mb-2 items-center">
+            <Input
+              type="time"
+              value={time}
+              onChange={(e) => handleChangeTime(index, e.target.value)}
+              className="border rounded p-1 w-auto"
+            />
+            <Button
+              variant="outline"
+              onClick={() => handleRemoveTimeInput(index)}
+            >
+              Remove
+            </Button>
+          </div>
+        ))}
+        <Button onClick={handleAddTimeInput}>Add more time</Button>
         {schedule && (
           <div className="mt-4">Next mass will be on: {formattedDate}</div>
         )}
+        {/* <p>{formattedTimes}</p> */}
         <Dialog>
           <DialogTrigger asChild>
             <Button>Update</Button>

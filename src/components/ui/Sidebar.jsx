@@ -61,7 +61,7 @@ export default function Sidebar({ children }) {
                   <span className="sr-only">Toggle navigation</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-64">
+              <SheetContent side="right" className="w-64">
                 <div className="flex h-full flex-col justify-between py-6 px-4">
                   <div className="space-y-6">
                     <nav className="space-y-1">

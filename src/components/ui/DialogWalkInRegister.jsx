@@ -32,6 +32,10 @@ import FormLabel from "../ui/FormLabel";
 import supabase from "../../utils/supabase";
 import { fetchLatestSchedule } from "@/services/apiAuth";
 
+const formatTimeWithoutTimezone = (timeString) => {
+  return timeString.includes("+") ? timeString.split("+")[0] : timeString;
+};
+
 export default function DialogWalkInRegister() {
   const [error, setError] = useState("");
   const [guardianFirstName, setGuardianFirstName] = useState("");
@@ -42,6 +46,7 @@ export default function DialogWalkInRegister() {
     { firstName: "", lastName: "", age: "" },
   ]);
   const [nextMassDate, setNextMassDate] = useState("");
+  const [massTime, setMassTime] = useState([]);
   const [activeTab, setActiveTab] = useState("guardian");
 
   const isStep1Complete =
@@ -131,12 +136,15 @@ export default function DialogWalkInRegister() {
     }
   };
 
+  const formattedTimes = massTime.map((t) => formatTimeWithoutTimezone(t));
+
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
         const latestSchedule = await fetchLatestSchedule();
         if (latestSchedule.length > 0) {
           setNextMassDate(latestSchedule[0].schedule);
+          setMassTime(latestSchedule[0].time);
         } else {
           setError("No schedule found.");
         }
@@ -243,7 +251,7 @@ export default function DialogWalkInRegister() {
                     htmlFor="preferredtime"
                     className="text-sm font-medium"
                   >
-                    Preferred Time
+                    Available Time
                   </Label>
                   <Select
                     onValueChange={(value) => setPreferredTime(value)}
@@ -253,8 +261,11 @@ export default function DialogWalkInRegister() {
                       <SelectValue placeholder="Select Time" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="9:00am">9:00 AM</SelectItem>
-                      <SelectItem value="11:00am">11:00 AM</SelectItem>
+                      {formattedTimes.map((time, index) => (
+                        <SelectItem key={index} value={time}>
+                          {time}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormLabel>
