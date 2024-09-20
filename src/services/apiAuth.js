@@ -60,11 +60,11 @@ export async function insertNewSchedule(schedule, time) {
 }
 
 // New Register function to sign up a new user
-export async function requestAccount({ name, email, password }) {
+export async function requestAccount({ name, email, password, contactNumber }) {
   // Insert the registration request into the account_pending table
   const { data, error } = await supabase
     .from('account_pending')
-    .insert({ name, email, password });
+    .insert({ name, email, password, contact_number: contactNumber }); // Use correct field name
 
   if (error) throw new Error(error.message);
 

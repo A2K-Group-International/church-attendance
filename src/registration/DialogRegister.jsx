@@ -18,19 +18,21 @@ export default function DialogRegister() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [contactNumber, setContactNumber] = useState(''); // New state for contact number
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
-  const [registerDialogOpen, setRegisterDialogOpen] = useState(false); // State to control the registration dialog
+  const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
+
   const { requestAccount, isLoading, isError, errorMessage } = useRegister({
     onSuccess: () => {
-      setSuccessDialogOpen(true); // Open success dialog on success
-      setRegisterDialogOpen(false); // Close the registration dialog
+      setSuccessDialogOpen(true);
+      setRegisterDialogOpen(false);
     },
   });
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!name || !email || !password) return;
-    requestAccount({ name, email, password });
+    if (!name || !email || !password || !contactNumber) return; // Validate contact number
+    requestAccount({ name, email, password, contactNumber }); // Pass contact number
   }
 
   return (
@@ -86,6 +88,20 @@ export default function DialogRegister() {
                 onChange={(e) => setPassword(e.target.value)}
                 className='w-full'
                 placeholder='Enter your password'
+                required
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='contactNumber' className='text-sm font-medium'>
+                Contact Number
+              </Label>
+              <Input
+                id='contactNumber'
+                type='tel'
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+                className='w-full'
+                placeholder='Enter your contact number'
                 required
               />
             </div>
