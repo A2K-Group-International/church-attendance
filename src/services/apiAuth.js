@@ -46,6 +46,23 @@ export async function fetchLatestSchedule() {
   }
 }
 
+export async function fetchTime(selectedDate) {
+  try {
+    const { data, error } = await supabase
+      .from('schedule')
+      .select('schedule, time')
+      .eq('schedule',selectedDate)
+   
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching schedule:', error.message);
+    throw new Error('Failed to load schedule.');
+  }
+}
+
 // Insert new schedule
 export async function insertNewSchedule(schedule, time) {
   try {

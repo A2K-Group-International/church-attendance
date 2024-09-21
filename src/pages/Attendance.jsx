@@ -4,14 +4,17 @@ import Sidebar from "../components/ui/Sidebar";
 import Table from "../layout/Table";
 import { Button } from "../components/ui/button";
 import { Calendar } from "../components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../components/ui/popover";
 import { Switch } from "../components/ui/switch";
 import { format } from "date-fns";
 import { CalendarIcon, Clock, Filter } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -31,29 +34,33 @@ export default function Attendance() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState("09:00");
+  const [selectedTime, setSelectedTime] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [availableTimes, setAvailableTimes] = useState([]);
+
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const itemsPerPage = 7;
 
-  const fetchData = useCallback(async (date, time, status) => {
+  const fetchData = useCallback(async (date, status, time) => {
     setLoading(true);
     setError(null);
     try {
-      const today = date ? new Date(date) : new Date();
-      const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-      const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+      const formattedDate = new Date(date).toISOString().split("T")[0];
 
       let query = supabase
         .from("attendance_pending")
-        .select("*", { count: 'exact' })
-        .gte("created_at", startOfDay)
-        .lte("created_at", endOfDay)
-        .eq("preferred_time", time)
-        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
+        .select("*", { count: "exact" })
+        .eq("schedule_day", formattedDate)
+        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1); // Pagination
 
+      // Apply the preferred_time filter if a specific time is selected
+      if (time) {
+        query = query.eq("preferred_time", time);
+      }
+
+      // Apply the status filter if a specific status is selected
       if (status !== "all") {
         query = query.eq("has_attended", status === "attended");
       }
@@ -62,17 +69,21 @@ export default function Attendance() {
 
       if (error) throw error;
 
-      setTotalPages(Math.ceil(count / itemsPerPage)); // Set total pages
+      setTotalPages(Math.ceil(count / itemsPerPage));
+
       const formattedData = fetchedData.map((item) => ({
         ...item,
-        formattedDate: new Date(item.created_at).toLocaleDateString("en-GB", {
+        formattedDate: new Date(item.schedule_day).toLocaleDateString("en-GB", {
           day: "numeric",
           month: "long",
           year: "numeric",
         }),
       }));
 
+      const uniqueTimes = [...new Set(fetchedData.map((item) => item.preferred_time))];
+
       setData(formattedData);
+      setAvailableTimes(uniqueTimes); // Set unique times for dropdown
     } catch (error) {
       setError("Error fetching data. Please try again.");
       console.error("Error in fetchData function:", error);
@@ -82,19 +93,22 @@ export default function Attendance() {
   }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
-    fetchData(selectedDate, selectedTime, statusFilter);
+    fetchData(selectedDate, statusFilter, selectedTime);
   }, [selectedDate, selectedTime, statusFilter, currentPage, fetchData]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date ? new Date(date) : new Date());
+    setCurrentPage(1); // Reset to the first page on date change
   };
 
   const handleTimeChange = (event) => {
     setSelectedTime(event.target.value);
+    setCurrentPage(1); // Reset to the first page on time change
   };
 
   const handleStatusChange = (event) => {
     setStatusFilter(event.target.value);
+    setCurrentPage(1); // Reset to the first page on status change
   };
 
   const handleSwitchChange = async (itemId, checked) => {
@@ -107,7 +121,9 @@ export default function Attendance() {
       if (error) throw error;
 
       const updatedData = data.map((dataItem) =>
-        dataItem.id === itemId ? { ...dataItem, has_attended: checked } : dataItem
+        dataItem.id === itemId
+          ? { ...dataItem, has_attended: checked }
+          : dataItem
       );
 
       setData(updatedData);
@@ -136,12 +152,17 @@ export default function Attendance() {
       <main className="p-4 lg:p-8 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Attendance</h1>
-          <p className="text-muted-foreground">Manage and track attendance records for children.</p>
+          <p className="text-muted-foreground">
+            Manage and track attendance records for children.
+          </p>
         </div>
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[200px] justify-start text-left font-normal">
+              <Button
+                variant="outline"
+                className="w-full sm:w-[200px] justify-start text-left font-normal"
+              >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {format(selectedDate, "PPP")}
               </Button>
@@ -162,10 +183,17 @@ export default function Attendance() {
               onChange={handleTimeChange}
               className="p-2 border border-input bg-background rounded-md"
             >
-              <option value="09:00">09:00 AM</option>
-              <option value="11:00">11:00 AM</option>
+              <option value="" disabled={availableTimes.length === 0}>
+                {availableTimes.length > 0 ? "Select Time" : "No times available"}
+              </option>
+              {availableTimes.map((time) => (
+                <option key={time} value={time}>
+                  {time}
+                </option>
+              ))}
             </select>
           </div>
+
           <div className="flex items-center space-x-2 w-full sm:w-auto">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <select

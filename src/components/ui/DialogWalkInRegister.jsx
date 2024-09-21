@@ -45,12 +45,13 @@ export default function DialogWalkInRegister() {
   const [children, setChildren] = useState([
     { firstName: "", lastName: "", age: "" },
   ]);
+  const [attendanceCode, setAttendanceCode] = useState("");
   const [nextMassDate, setNextMassDate] = useState("");
   const [massTime, setMassTime] = useState([]);
   const [activeTab, setActiveTab] = useState("guardian");
 
   const isStep1Complete =
-    preferredTime && guardianFirstName && guardianLastName && guardianTelephone;
+    massTime && guardianFirstName && guardianLastName && guardianTelephone;
 
   const handleNext = () => {
     if (!isStep1Complete) {
@@ -75,6 +76,12 @@ export default function DialogWalkInRegister() {
     const newChildren = [...children];
     newChildren[index] = { ...newChildren[index], [field]: value };
     setChildren(newChildren);
+  };
+
+  const handleGenerateRandomCode = () => {
+    const randomNumber =
+      Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    setAttendanceCode(randomNumber);
   };
 
   const handleSubmit = async () => {
@@ -104,6 +111,9 @@ export default function DialogWalkInRegister() {
       return;
     }
 
+    //Generate Unique Code to users for them to edit registration
+    handleGenerateRandomCode();
+
     try {
       const { error: dataError } = await supabase
         .from("attendance_pending")
@@ -116,7 +126,9 @@ export default function DialogWalkInRegister() {
             children_first_name: child.firstName,
             children_age: child.age,
             has_attended: false,
+            attendance_code: attendanceCode,
             preferred_time: preferredTime,
+            schedule_day: nextMassDate,
           }))
         );
 
