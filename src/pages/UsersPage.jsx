@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 
-const headers = ['#', 'Email', 'Name', 'Action'];
+const headers = ['#', 'Email', 'Name', 'Registered', 'Action'];
 
 export default function UsersPage() {
   const [data, setData] = useState([]);
@@ -22,6 +22,7 @@ export default function UsersPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedUser, setSelectedUser] = useState(null); // To track the user selected for confirmation
   const [isDialogOpen, setIsDialogOpen] = useState(false); // To control the confirmation dialog state
+  const [signUpLoading, setSignUpLoading] = useState(false); // Loading state for sign-up
   const itemsPerPage = 7;
 
   const fetchData = useCallback(async () => {
@@ -42,6 +43,7 @@ export default function UsersPage() {
 
       setTotalPages(Math.ceil(count / itemsPerPage));
       setData(fetchedData);
+      console.log(fetchedData);
     } catch (error) {
       setError('Error fetching users. Please try again.');
       console.error('Error in fetchData function:', error);
@@ -55,6 +57,7 @@ export default function UsersPage() {
   }, [currentPage, fetchData]);
 
   const signUp = async (email, password, userData) => {
+    setSignUpLoading(true); // Set loading to true when sign-up starts
     try {
       const { data: user, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -81,9 +84,24 @@ export default function UsersPage() {
         throw insertError;
       }
 
+      // Update `account_pending` to set `registered` to true
+      const { error: updateError } = await supabase
+        .from('account_pending')
+        .update({ registered: true })
+        .eq('id', userData.id); // Use the correct identifier (e.g., `id`) to update the specific record
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Re-fetch data to reflect the updated table
+      fetchData();
+
       return user;
     } catch (error) {
       console.error('Error during sign-up:', error);
+    } finally {
+      setSignUpLoading(false); // Set loading to false after sign-up completes
     }
   };
 
@@ -107,12 +125,18 @@ export default function UsersPage() {
     index + 1 + (currentPage - 1) * itemsPerPage,
     item.email,
     item.name,
+    item.registered ? 'Yes' : 'No', // Display 'Yes' or 'No' based on the `registered` status
     <Button
       key={item.id}
       onClick={() => handleApproveClick(item)} // Trigger the confirmation dialog
       variant='primary'
+      disabled={item.registered || signUpLoading} // Disable button if user is already registered or signup is loading
     >
-      Approve Account
+      {signUpLoading && selectedUser?.id === item.id
+        ? 'Registering...'
+        : item.registered
+        ? 'Registered'
+        : 'Approve Account'}
     </Button>,
   ]);
 
@@ -195,8 +219,12 @@ export default function UsersPage() {
               >
                 Cancel
               </Button>
-              <Button variant='primary' onClick={confirmApprove}>
-                Confirm
+              <Button
+                variant='primary'
+                onClick={confirmApprove}
+                disabled={signUpLoading} // Disable button during loading
+              >
+                {signUpLoading ? 'Registering...' : 'Confirm'}
               </Button>
             </div>
           </div>

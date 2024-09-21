@@ -64,7 +64,7 @@ export async function requestAccount({ name, email, password, contactNumber }) {
   // Insert the registration request into the account_pending table
   const { data, error } = await supabase
     .from('account_pending')
-    .insert({ name, email, password, contact_number: contactNumber }); // Use correct field name
+    .insert({ name, email, password, contact: contactNumber }); // Use correct field name
 
   if (error) throw new Error(error.message);
 
