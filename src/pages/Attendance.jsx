@@ -22,12 +22,12 @@ import {
 } from "@/components/ui/pagination";
 
 const headers = [
+  "Action",
   "#",
   "Children Name",
   "Guardian Name",
   "Telephone",
   "Status",
-  "Action",
 ];
 
 export default function Attendance() {
@@ -43,54 +43,65 @@ export default function Attendance() {
   const [totalPages, setTotalPages] = useState(0);
   const itemsPerPage = 7;
 
-  const fetchData = useCallback(async (date, status, time) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const formattedDate = new Date(date).toISOString().split("T")[0];
+  const fetchData = useCallback(
+    async (date, status, time) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const formattedDate = new Date(date).toISOString().split("T")[0];
 
-      let query = supabase
-        .from("attendance_pending")
-        .select("*", { count: "exact" })
-        .eq("schedule_day", formattedDate)
-        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1); // Pagination
+        let query = supabase
+          .from("attendance_pending")
+          .select("*", { count: "exact" })
+          .eq("schedule_day", formattedDate)
+          .range(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage - 1
+          ); // Pagination
 
-      // Apply the preferred_time filter if a specific time is selected
-      if (time) {
-        query = query.eq("preferred_time", time);
+        // Apply the preferred_time filter if a specific time is selected
+        if (time) {
+          query = query.eq("preferred_time", time);
+        }
+
+        // Apply the status filter if a specific status is selected
+        if (status !== "all") {
+          query = query.eq("has_attended", status === "attended");
+        }
+
+        const { data: fetchedData, error, count } = await query;
+
+        if (error) throw error;
+
+        setTotalPages(Math.ceil(count / itemsPerPage));
+
+        const formattedData = fetchedData.map((item) => ({
+          ...item,
+          formattedDate: new Date(item.schedule_day).toLocaleDateString(
+            "en-GB",
+            {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }
+          ),
+        }));
+
+        const uniqueTimes = [
+          ...new Set(fetchedData.map((item) => item.preferred_time)),
+        ];
+
+        setData(formattedData);
+        setAvailableTimes(uniqueTimes); // Set unique times for dropdown
+      } catch (error) {
+        setError("Error fetching data. Please try again.");
+        console.error("Error in fetchData function:", error);
+      } finally {
+        setLoading(false);
       }
-
-      // Apply the status filter if a specific status is selected
-      if (status !== "all") {
-        query = query.eq("has_attended", status === "attended");
-      }
-
-      const { data: fetchedData, error, count } = await query;
-
-      if (error) throw error;
-
-      setTotalPages(Math.ceil(count / itemsPerPage));
-
-      const formattedData = fetchedData.map((item) => ({
-        ...item,
-        formattedDate: new Date(item.schedule_day).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        }),
-      }));
-
-      const uniqueTimes = [...new Set(fetchedData.map((item) => item.preferred_time))];
-
-      setData(formattedData);
-      setAvailableTimes(uniqueTimes); // Set unique times for dropdown
-    } catch (error) {
-      setError("Error fetching data. Please try again.");
-      console.error("Error in fetchData function:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, itemsPerPage]);
+    },
+    [currentPage, itemsPerPage]
+  );
 
   useEffect(() => {
     fetchData(selectedDate, statusFilter, selectedTime);
@@ -134,17 +145,17 @@ export default function Attendance() {
   };
 
   const rows = data.map((item, index) => [
-    index + 1 + (currentPage - 1) * itemsPerPage,
-    `${item.children_first_name} ${item.children_last_name}`,
-    `${item.guardian_first_name} ${item.guardian_last_name}`,
-    item.guardian_telephone,
-    item.has_attended ? "Attended" : "Pending",
     <Switch
       key={item.id}
       checked={item.has_attended}
       onCheckedChange={(checked) => handleSwitchChange(item.id, checked)}
       aria-label="Toggle attendance status"
     />,
+    index + 1 + (currentPage - 1) * itemsPerPage,
+    `${item.children_first_name} ${item.children_last_name}`,
+    `${item.guardian_first_name} ${item.guardian_last_name}`,
+    item.guardian_telephone,
+    item.has_attended ? "Attended" : "Pending",
   ]);
 
   return (
@@ -184,7 +195,9 @@ export default function Attendance() {
               className="p-2 border border-input bg-background rounded-md"
             >
               <option value="" disabled={availableTimes.length === 0}>
-                {availableTimes.length > 0 ? "Select Time" : "No times available"}
+                {availableTimes.length > 0
+                  ? "Select Time"
+                  : "No times available"}
               </option>
               {availableTimes.map((time) => (
                 <option key={time} value={time}>
@@ -211,7 +224,9 @@ export default function Attendance() {
           {loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading attendance records...</p>
+              <p className="mt-4 text-muted-foreground">
+                Loading attendance records...
+              </p>
             </div>
           ) : error ? (
             <div className="p-8 text-center">
@@ -250,7 +265,8 @@ export default function Attendance() {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+                        if (currentPage < totalPages)
+                          setCurrentPage((prev) => prev + 1);
                       }}
                     />
                   </PaginationItem>
@@ -259,7 +275,9 @@ export default function Attendance() {
             </>
           ) : (
             <div className="p-8 text-center">
-              <p className="text-muted-foreground">No attendance records found.</p>
+              <p className="text-muted-foreground">
+                No attendance records found.
+              </p>
             </div>
           )}
         </div>
