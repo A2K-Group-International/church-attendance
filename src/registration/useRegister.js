@@ -12,8 +12,9 @@ export function useRegister({ onSuccess }) {
     isError,
     error: errorMessage, // Capture the error message
   } = useMutation({
-    mutationFn: ({ name, email, password }) =>
-      requestAccountApi({ name, email, password }),
+    mutationFn: (
+      { name, email, password, contactNumber } // Accept contactNumber
+    ) => requestAccountApi({ name, email, password, contactNumber }), // Pass contactNumber to API
     onSuccess: () => {
       queryClient.invalidateQueries(['account_pending']); // Invalidate or refetch as necessary
       if (onSuccess) onSuccess(); // Call the onSuccess callback if provided
