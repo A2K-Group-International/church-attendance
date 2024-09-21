@@ -15,8 +15,8 @@ import { Label } from "@/components/ui/label";
 import { useLogin } from "@/authentication/useLogin";
 
 export function DialogLogin() {
-  const [email, setEmail] = useState("test@test.com");
-  const [password, setPassword] = useState("testtest");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login, isLoading, isError } = useLogin();
 
   function handleSubmit(e) {
