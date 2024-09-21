@@ -18,19 +18,41 @@ export default function DialogRegister() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // State for confirm password
+  const [contactNumber, setContactNumber] = useState('');
+  const [passwordMismatchError, setPasswordMismatchError] = useState(false); // Error for password mismatch
+  const [passwordLengthError, setPasswordLengthError] = useState(false); // Error for password length
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
-  const [registerDialogOpen, setRegisterDialogOpen] = useState(false); // State to control the registration dialog
+  const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
+
   const { requestAccount, isLoading, isError, errorMessage } = useRegister({
     onSuccess: () => {
-      setSuccessDialogOpen(true); // Open success dialog on success
-      setRegisterDialogOpen(false); // Close the registration dialog
+      setSuccessDialogOpen(true);
+      setRegisterDialogOpen(false);
     },
   });
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!name || !email || !password) return;
-    requestAccount({ name, email, password });
+    if (!name || !email || !password || !contactNumber) return;
+
+    // Check if password is at least 6 characters long
+    if (password.length < 6) {
+      setPasswordLengthError(true);
+      return;
+    }
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setPasswordMismatchError(true);
+      setPasswordLengthError(false); // Reset the length error
+      return;
+    }
+
+    // If all validations pass, proceed with the account request
+    setPasswordMismatchError(false);
+    setPasswordLengthError(false);
+    requestAccount({ name, email, password, contactNumber });
   }
 
   return (
@@ -86,6 +108,44 @@ export default function DialogRegister() {
                 onChange={(e) => setPassword(e.target.value)}
                 className='w-full'
                 placeholder='Enter your password'
+                required
+              />
+              {passwordLengthError && (
+                <p className='text-sm text-destructive'>
+                  Password must be at least 6 characters long.
+                </p>
+              )}
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='confirmPassword' className='text-sm font-medium'>
+                Confirm Password
+              </Label>
+              <Input
+                id='confirmPassword'
+                value={confirmPassword}
+                type='password'
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className='w-full'
+                placeholder='Confirm your password'
+                required
+              />
+              {passwordMismatchError && (
+                <p className='text-sm text-destructive'>
+                  Passwords do not match. Please try again.
+                </p>
+              )}
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='contactNumber' className='text-sm font-medium'>
+                Contact Number
+              </Label>
+              <Input
+                id='contactNumber'
+                type='tel'
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+                className='w-full'
+                placeholder='Enter your contact number'
                 required
               />
             </div>
