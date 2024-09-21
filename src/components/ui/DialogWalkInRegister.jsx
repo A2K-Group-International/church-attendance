@@ -49,9 +49,9 @@ export default function DialogWalkInRegister() {
   const [nextMassDate, setNextMassDate] = useState("");
   const [massTime, setMassTime] = useState([]);
   const [activeTab, setActiveTab] = useState("guardian");
+  const [copiedNumber, setCopiedNumber] = useState("")
 
-  const isStep1Complete =
-    massTime;
+  const isStep1Complete = massTime;
 
   const handleNext = () => {
     if (!isStep1Complete) {
@@ -208,13 +208,27 @@ export default function DialogWalkInRegister() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl font-semibold">
-                  Parent Registration
+                  Registration
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
                   Please provide your information and select your preferred time
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <FormLabel>
+                  <Label htmlFor="Event" className="text-sm font-medium">
+                    Please choose an event to attend
+                  </Label>
+                  <Select>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select Event" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Children's Liturgy</SelectItem>
+                      <SelectItem value="dark">Other event</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormLabel>
                 <FormLabel>
                   <Label
                     htmlFor="preferredtime"
