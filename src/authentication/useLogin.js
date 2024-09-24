@@ -15,7 +15,7 @@ export function useLogin() {
     onSuccess: (user) => {
       console.log(user);
       queryClient.setQueriesData(['user'], user);
-      navigate('/admin-dashboard'), { replace: true };
+      navigate('/events-page'), { replace: true };
     },
     onError: (err) => {
       console.log(err);
