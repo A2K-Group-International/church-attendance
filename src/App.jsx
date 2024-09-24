@@ -33,18 +33,18 @@ function App() {
           path='/schedule'
           element={
             <ProtectedRoute>
-              <AdminSchedule />
+              <AdminNewSchedule />
             </ProtectedRoute>
           }
         />
-          <Route
+          {/* <Route
           path='/newschedule'
           element={
             <ProtectedRoute>
               <AdminNewSchedule />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path='/users'
           element={

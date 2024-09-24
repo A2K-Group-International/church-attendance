@@ -59,7 +59,7 @@ export default function Sidebar({ children }) {
         <header className='sticky top-0 z-10 border-b bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900 lg:hidden'>
           <div className='flex items-center justify-between'>
             <Link to='#' className='flex items-center gap-2 font-bold'>
-              <span className='text-lg'>Church Attendance</span>
+              <span className='text-lg'>Management Centre</span>
             </Link>
             <Sheet>
               <SheetTrigger asChild>

@@ -36,6 +36,7 @@ import { useState, useEffect, useCallback } from "react";
 const headers = ["Event Name", "Date", "Time"];
 
 export default function AdminNewSchedule() {
+  const [time, setTime] = useState([""]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [events, setEvents] = useState([]);
@@ -73,7 +74,7 @@ export default function AdminNewSchedule() {
         {
           name: data.name,
           schedule: selectedDate,
-          time: [data.time],
+          time: time,
         },
       ]);
 
@@ -100,7 +101,11 @@ export default function AdminNewSchedule() {
     setError(null);
 
     try {
-      const { data: fetchedData, error, count } = await supabase
+      const {
+        data: fetchedData,
+        error,
+        count,
+      } = await supabase
         .from("schedule")
         .select("*", { count: "exact" })
         .range(
@@ -127,6 +132,7 @@ export default function AdminNewSchedule() {
 
   // Convert time to readable format (24-hour)
   const formatTime = (timeString) => {
+    if (!timeString) return "N/A"; // Return a default value if timeString is null or undefined
     const [hours, minutes] = timeString.split(":");
     return `${hours}:${minutes}`;
   };
@@ -138,11 +144,24 @@ export default function AdminNewSchedule() {
     event.time && event.time.length > 0 ? formatTime(event.time[0]) : "N/A", // Safely handle time
   ]);
 
+  const handleAddTimeInput = () => {
+    setTime([...time, ""]); // Add a new input
+  };
+  const handleRemoveTimeInput = (index) => {
+    if (time.length > 1) {
+      setTime(time.filter((_, i) => i !== index)); // Remove input at the specified index
+    }
+  };
+  const handleChangeTime = (index, value) => {
+    const updatedTimes = [...time];
+    updatedTimes[index] = value; // Update the specific time input
+    setTime(updatedTimes);
+  };
+
   return (
     <Sidebar>
       <main className="p-4 lg:p-8">
         <h1 className="text-xl font-semibold mb-4">Schedule</h1>
-
         {/* Create Event Dialog */}
         <Dialog onOpenChange={(isOpen) => !isOpen && resetForm()}>
           <DialogTrigger asChild>
@@ -151,17 +170,12 @@ export default function AdminNewSchedule() {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Create Event</DialogTitle>
-              <DialogDescription>
-                Schedule an upcoming event.
-              </DialogDescription>
+              <DialogDescription>Schedule an upcoming event.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div>
                 <Label htmlFor="name">Event Name</Label>
-                <Input
-                  id="name"
-                  {...register("name", { required: true })}
-                />
+                <Input id="name" {...register("name", { required: true })} />
                 {errors.name && (
                   <p className="text-red-500">Event name is required</p>
                 )}
@@ -191,20 +205,31 @@ export default function AdminNewSchedule() {
                   <p className="text-red-500">Date is required</p>
                 )}
               </div>
-
               {/* Time Selector */}
               <div className="mt-4">
                 <Label htmlFor="time">Time</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  {...register("time", { required: true })}
-                  className="border rounded p-1 w-auto"
-                />
-                {errors.time && (
-                  <p className="text-red-500">Time is required</p>
-                )}
               </div>
+              {time.map((time, index) => (
+                <div key={index} className="flex space-x-2 mb-2 items-center">
+                  <Input
+                    type="time"
+                    value={time}
+                    onChange={(e) => handleChangeTime(index, e.target.value)}
+                    className="border rounded p-1 w-auto"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleRemoveTimeInput(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={handleAddTimeInput}>
+                Add more time
+              </Button>
+              {errors.time && <p className="text-red-500">Time is required</p>}
 
               <DialogFooter className="mt-4">
                 <DialogClose asChild>
