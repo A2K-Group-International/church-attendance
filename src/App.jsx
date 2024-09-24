@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import UsersPage from './pages/UsersPage';
 import AdminSchedule from './pages/AdminSchedule';
 import FamilyPage from './pages/FamilyPage';
+import EventsPage from './pages/EventsPage';
 
 function App() {
   return (
@@ -17,6 +18,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/events-page'
+          element={
+            <ProtectedRoute>
+              <EventsPage />
             </ProtectedRoute>
           }
         />
