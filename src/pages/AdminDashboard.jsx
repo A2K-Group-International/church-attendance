@@ -1,5 +1,3 @@
-"use client";
-
 import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import Sidebar from "@/components/ui/Sidebar";
@@ -40,7 +38,7 @@ export default function ChurchAttendanceDashboard() {
     <Sidebar>
       <main className="p-4 lg:p-8">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-lg font-bold">Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400">
             Monthly attendance data.
           </p>

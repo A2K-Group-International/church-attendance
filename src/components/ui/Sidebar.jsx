@@ -10,7 +10,7 @@ export default function Sidebar({ children }) {
         <div className='flex h-full flex-col justify-between py-6 px-4'>
           <div className='space-y-6'>
             <Link to='#' className='flex items-center gap-2 font-bold'>
-              <span className='text-lg'>Church Attendance</span>
+              <span className='text-xl'>Management Centre</span>
             </Link>
             <nav className='space-y-1'>
               <Link
@@ -27,13 +27,13 @@ export default function Sidebar({ children }) {
                 <UsersIcon className='h-5 w-5' />
                 Attendance
               </Link>
-              <Link
+              {/* <Link
                 to='/family'
                 className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
               >
                 <UsersIcon className='h-5 w-5' />
                 Family
-              </Link>
+              </Link> */}
               <Link
                 to='/users'
                 className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
@@ -59,7 +59,7 @@ export default function Sidebar({ children }) {
         <header className='sticky top-0 z-10 border-b bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900 lg:hidden'>
           <div className='flex items-center justify-between'>
             <Link to='#' className='flex items-center gap-2 font-bold'>
-              <span className='text-lg'>Church Attendance</span>
+              <span className='text-xl'>Management Centre</span>
             </Link>
             <Sheet>
               <SheetTrigger asChild>
@@ -79,13 +79,13 @@ export default function Sidebar({ children }) {
                         <HomeIcon className='h-5 w-5' />
                         Home
                       </Link>
-                      <Link
+                      {/* <Link
                         to='/family'
                         className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
                       >
                         <UsersIcon className='h-5 w-5' />
                         Family
-                      </Link>
+                      </Link> */}
                       <Link
                         to='/attendance'
                         className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
