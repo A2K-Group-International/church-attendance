@@ -1,18 +1,19 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import AdminDashboard from "./pages/AdminDashboard";
-import Attendance from "./pages/Attendance";
-import ProtectedRoute from "./authentication/ProtectedRoute";
-import Home from "./pages/Home";
-import UsersPage from "./pages/UsersPage";
-import AdminSchedule from "./pages/AdminSchedule";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AdminDashboard from './pages/AdminDashboard';
+import Attendance from './pages/Attendance';
+import ProtectedRoute from './authentication/ProtectedRoute';
+import Home from './pages/Home';
+import UsersPage from './pages/UsersPage';
+import AdminSchedule from './pages/AdminSchedule';
+import FamilyPage from './pages/FamilyPage';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />}></Route>
+        <Route path='/' element={<Home />}></Route>
         <Route
-          path="/admin-dashboard"
+          path='/admin-dashboard'
           element={
             <ProtectedRoute>
               <AdminDashboard />
@@ -20,7 +21,7 @@ function App() {
           }
         />
         <Route
-          path="/attendance"
+          path='/attendance'
           element={
             <ProtectedRoute>
               <Attendance />
@@ -28,18 +29,26 @@ function App() {
           }
         />
         <Route
-          path="/schedule"
+          path='/schedule'
           element={
             <ProtectedRoute>
-              <AdminSchedule/>
+              <AdminSchedule />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/users"
+          path='/users'
           element={
             <ProtectedRoute>
-              <UsersPage/>
+              <UsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/family'
+          element={
+            <ProtectedRoute>
+              <FamilyPage />
             </ProtectedRoute>
           }
         />

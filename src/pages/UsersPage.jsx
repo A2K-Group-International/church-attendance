@@ -20,9 +20,9 @@ export default function UsersPage() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [selectedUser, setSelectedUser] = useState(null); // To track the user selected for confirmation
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // To control the confirmation dialog state
-  const [signUpLoading, setSignUpLoading] = useState(false); // Loading state for sign-up
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [signUpLoading, setSignUpLoading] = useState(false);
   const itemsPerPage = 7;
 
   const fetchData = useCallback(async () => {
@@ -43,7 +43,6 @@ export default function UsersPage() {
 
       setTotalPages(Math.ceil(count / itemsPerPage));
       setData(fetchedData);
-      console.log(fetchedData);
     } catch (error) {
       setError('Error fetching users. Please try again.');
       console.error('Error in fetchData function:', error);
@@ -57,7 +56,7 @@ export default function UsersPage() {
   }, [currentPage, fetchData]);
 
   const signUp = async (email, password, userData) => {
-    setSignUpLoading(true); // Set loading to true when sign-up starts
+    setSignUpLoading(true);
     try {
       const { data: user, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -68,15 +67,14 @@ export default function UsersPage() {
         throw signUpError;
       }
 
-      // Add user details to `user_list`
       const { error: insertError } = await supabase.from('user_list').insert([
         {
-          user_uuid: user.user.id, // Foreign key to auth id
-          user_name: userData.name, // Name from the pending account
-          user_role: 'user', // Set the user role, you can adjust this accordingly
+          user_uuid: user.user.id,
+          user_name: userData.name,
+          user_role: 'user',
           user_email: email,
-          user_password: password, // Note: Store passwords securely in a real app
-          user_contact: userData.contact, // Contact from the pending account
+          user_password: password,
+          user_contact: userData.contact,
         },
       ]);
 
@@ -84,35 +82,33 @@ export default function UsersPage() {
         throw insertError;
       }
 
-      // Update `account_pending` to set `registered` to true
       const { error: updateError } = await supabase
         .from('account_pending')
         .update({ registered: true })
-        .eq('id', userData.id); // Use the correct identifier (e.g., `id`) to update the specific record
+        .eq('id', userData.id);
 
       if (updateError) {
         throw updateError;
       }
 
-      // Re-fetch data to reflect the updated table
       fetchData();
 
       return user;
     } catch (error) {
       console.error('Error during sign-up:', error);
     } finally {
-      setSignUpLoading(false); // Set loading to false after sign-up completes
+      setSignUpLoading(false);
     }
   };
 
   const handleApproveAccount = async (userData) => {
     await signUp(userData.email, userData.password, userData);
-    setIsDialogOpen(false); // Close the dialog after approving
+    setIsDialogOpen(false);
   };
 
   const handleApproveClick = (userData) => {
-    setSelectedUser(userData); // Set the selected user to be approved
-    setIsDialogOpen(true); // Open the confirmation dialog
+    setSelectedUser(userData);
+    setIsDialogOpen(true);
   };
 
   const confirmApprove = () => {
@@ -121,25 +117,36 @@ export default function UsersPage() {
     }
   };
 
-  const rows = data.map((item, index) => [
-    index + 1 + (currentPage - 1) * itemsPerPage,
-    item.email,
-    item.name,
-    item.registered ? 'Yes' : 'No', // Display 'Yes' or 'No' based on the `registered` status
-    <Button
-      key={item.id}
-      onClick={() => handleApproveClick(item)} // Trigger the confirmation dialog
-      variant='primary'
-      disabled={item.registered || signUpLoading} // Disable button if user is already registered or signup is loading
-    >
-      {signUpLoading && selectedUser?.id === item.id
-        ? 'Registering...'
-        : item.registered
-        ? 'Registered'
-        : 'Approve Account'}
-    </Button>,
-  ]);
+  const getRowClassName = (registered) => {
+    return registered ? 'bg-green-100' : 'bg-red-100';
+  };
 
+  const rows = data.map((item, index) => {
+    const isRegistered = item.registered;
+    return [
+      index + 1 + (currentPage - 1) * itemsPerPage,
+      item.email,
+      item.name,
+      isRegistered ? (
+        <span className='font-bold text-green-600'>Yes</span> // Emphasized for registered users
+      ) : (
+        <span className='text-red-600'>No</span> // Highlighted for non-registered users
+      ),
+      <Button
+        key={item.id}
+        onClick={() => handleApproveClick(item)}
+        variant='primary'
+        disabled={isRegistered || signUpLoading}
+        className={isRegistered ? 'opacity-50 cursor-not-allowed' : ''} // Style for registered users
+      >
+        {signUpLoading && selectedUser?.id === item.id
+          ? 'Registering...'
+          : isRegistered
+          ? 'Registered'
+          : 'Approve Account'}
+      </Button>,
+    ];
+  });
   return (
     <Sidebar>
       <main className='p-4 lg:p-8 max-w-7xl mx-auto'>
@@ -203,7 +210,6 @@ export default function UsersPage() {
         </div>
       </main>
 
-      {/* Inline Confirmation Dialog */}
       {isDialogOpen && (
         <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
           <div className='bg-white rounded-lg shadow-lg w-96 p-6'>
@@ -219,12 +225,8 @@ export default function UsersPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant='primary'
-                onClick={confirmApprove}
-                disabled={signUpLoading} // Disable button during loading
-              >
-                {signUpLoading ? 'Registering...' : 'Confirm'}
+              <Button variant='primary' onClick={confirmApprove}>
+                Approve
               </Button>
             </div>
           </div>

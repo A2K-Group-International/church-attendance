@@ -1,4 +1,4 @@
-import supabase from "../utils/supabase";
+import supabase from '../utils/supabase';
 
 // Login function
 export async function login({ email, password }) {
@@ -33,32 +33,32 @@ export async function getCurrentUser() {
 export async function fetchLatestSchedule() {
   try {
     const { data, error } = await supabase
-      .from("schedule")
-      .select("schedule, time")
-      .order("id", { ascending: false });
+      .from('schedule')
+      .select('schedule, time')
+      .order('id', { ascending: false });
 
     if (error) throw error;
 
     return data;
   } catch (error) {
-    console.error("Error fetching schedule:", error.message);
-    throw new Error("Failed to load schedule.");
+    console.error('Error fetching schedule:', error.message);
+    throw new Error('Failed to load schedule.');
   }
 }
 
 export async function fetchTime(selectedDate) {
   try {
     const { data, error } = await supabase
-      .from("schedule")
-      .select("schedule, time")
-      .eq("schedule", selectedDate);
+      .from('schedule')
+      .select('schedule, time')
+      .eq('schedule', selectedDate);
 
     if (error) throw error;
 
     return data;
   } catch (error) {
-    console.error("Error fetching schedule:", error.message);
-    throw new Error("Failed to load schedule.");
+    console.error('Error fetching schedule:', error.message);
+    throw new Error('Failed to load schedule.');
   }
 }
 
@@ -66,12 +66,12 @@ export async function fetchTime(selectedDate) {
 export async function insertNewSchedule(schedule, time) {
   try {
     const { data, error } = await supabase
-      .from("schedule")
+      .from('schedule')
       .insert(schedule, time);
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error("Error inserting new schedule:", error.message);
+    console.error('Error inserting new schedule:', error.message);
   }
 }
 
@@ -82,7 +82,6 @@ export async function requestAccount({ name, email, password, contactNumber }) {
 
     .from('account_pending')
     .insert({ name, email, password, contact: contactNumber }); // Use correct field name
-
 
   if (error) throw new Error(error.message);
 
