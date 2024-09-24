@@ -1,11 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import AdminDashboard from './pages/AdminDashboard';
-import Attendance from './pages/Attendance';
-import ProtectedRoute from './authentication/ProtectedRoute';
-import Home from './pages/Home';
-import UsersPage from './pages/UsersPage';
-import AdminSchedule from './pages/AdminSchedule';
-import FamilyPage from './pages/FamilyPage';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import AdminDashboard from "./pages/AdminDashboard";
+import Attendance from "./pages/Attendance";
+import ProtectedRoute from "./authentication/ProtectedRoute";
+import Home from "./pages/Home";
+import UsersPage from "./pages/UsersPage";
+import AdminSchedule from "./pages/AdminNewSchedule";
+import FamilyPage from "./pages/FamilyPage";
+import AdminNewSchedule from "./pages/AdminNewSchedule";
 
 function App() {
   return (
@@ -33,6 +34,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminSchedule />
+            </ProtectedRoute>
+          }
+        />
+          <Route
+          path='/newschedule'
+          element={
+            <ProtectedRoute>
+              <AdminNewSchedule />
             </ProtectedRoute>
           }
         />

@@ -30,31 +30,22 @@ import {
 } from "../ui/dialog";
 import FormLabel from "../ui/FormLabel";
 import supabase from "../../utils/supabase";
-import { fetchLatestSchedule } from "@/services/apiAuth";
-
-const formatTimeWithoutTimezone = (timeString) => {
-  return timeString.includes("+") ? timeString.split("+")[0] : timeString;
-};
+import { fetchAllEvents } from "@/services/apiAuth";
 
 export default function DialogWalkInRegister() {
   const [error, setError] = useState("");
   const [guardianFirstName, setGuardianFirstName] = useState("");
   const [guardianLastName, setGuardianLastName] = useState("");
-  const [guardianTelephone, setGuardianTelephone] = useState("");
   const [preferredTime, setPreferredTime] = useState("");
   const [children, setChildren] = useState([
-    { firstName: "", lastName: "", age: "" },
+    { firstName: "", lastName: "", telephone: "" },
   ]);
-  const [attendanceCode, setAttendanceCode] = useState("");
-  const [nextMassDate, setNextMassDate] = useState("");
-  const [massTime, setMassTime] = useState([]);
+  const [eventName, setEventName] = useState([]);
   const [activeTab, setActiveTab] = useState("guardian");
-  const [copiedNumber, setCopiedNumber] = useState("")
-
-  const isStep1Complete = massTime;
+  const [selectedEvent, setSelectedEvent] = useState("");
 
   const handleNext = () => {
-    if (!isStep1Complete) {
+    if (!preferredTime) {
       setError("Please fill out all fields.");
     } else {
       setError("");
@@ -63,7 +54,7 @@ export default function DialogWalkInRegister() {
   };
 
   const handleAddChild = () => {
-    setChildren([...children, { firstName: "", lastName: "", age: "" }]);
+    setChildren([...children, { firstName: "", lastName: "", telephone: "" }]);
   };
 
   const handleRemoveChild = (index) => {
@@ -81,13 +72,12 @@ export default function DialogWalkInRegister() {
   const handleGenerateRandomCode = () => {
     const randomNumber =
       Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-    setAttendanceCode(randomNumber);
+    return randomNumber;
   };
 
   const handleSubmit = async () => {
-    const trimmedGuardianTelephone = guardianTelephone.trim();
     const hasEmptyChild = children.some(
-      (child) => !child.firstName || !child.lastName || !child.age
+      (child) => !child.firstName || !child.lastName || !child.telephone
     );
 
     if (
@@ -102,16 +92,16 @@ export default function DialogWalkInRegister() {
 
     const parsedChildren = children.map((child) => ({
       ...child,
-      age: parseInt(child.age, 10),
+      telephone: parseInt(child.telephone, 10),
     }));
 
-    if (parsedChildren.some((child) => isNaN(child.age))) {
-      setError("Age must be a number.");
+    if (parsedChildren.some((child) => isNaN(child.telephone))) {
+      setError("Telephone must be a number.");
       return;
     }
 
     //Generate Unique Code to users for them to edit registration
-    handleGenerateRandomCode();
+    const randomCode = handleGenerateRandomCode();
 
     try {
       const { error: dataError } = await supabase
@@ -120,14 +110,14 @@ export default function DialogWalkInRegister() {
           parsedChildren.map((child) => ({
             guardian_first_name: guardianFirstName,
             guardian_last_name: guardianLastName,
-            guardian_telephone: child.age,
+            guardian_telephone: child.telephone,
             children_last_name: child.lastName,
             children_first_name: child.firstName,
-            children_age: child.age,
             has_attended: false,
-            attendance_code: attendanceCode,
+            attendance_code: randomCode,
             preferred_time: preferredTime,
-            schedule_day: nextMassDate,
+            schedule_day: filteredMassSchedule,
+            selected_event: selectedEvent,
           }))
         );
 
@@ -135,27 +125,26 @@ export default function DialogWalkInRegister() {
 
       setGuardianFirstName("");
       setGuardianLastName("");
-      setGuardianTelephone("");
       setPreferredTime("");
-      setChildren([{ firstName: "", lastName: "", age: "" }]);
+      setSelectedEvent("");
+      setChildren([{ firstName: "", lastName: "", telephone: "" }]);
       setActiveTab("guardian");
       setError("");
-      alert("Registration successful!");
+      alert(`Registration successful! Please save your code: ${randomCode}`);
     } catch (error) {
       console.error("Error submitting form:", error.message);
       setError("There was an error submitting the form. Please try again.");
     }
   };
 
-  const formattedTimes = massTime.map((t) => formatTimeWithoutTimezone(t));
-
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const latestSchedule = await fetchLatestSchedule();
-        if (latestSchedule.length > 0) {
-          setNextMassDate(latestSchedule[0].schedule);
-          setMassTime(latestSchedule[0].time);
+        const events = await fetchAllEvents();
+        if (events.length > 0) {
+          setEventName(events);
+          // setNextMassDate(events[0].schedule);
+          // setMassTime(events[0].time);
         } else {
           setError("No schedule found.");
         }
@@ -167,9 +156,18 @@ export default function DialogWalkInRegister() {
     fetchSchedule();
   }, []);
 
-  const formattedDate = nextMassDate
-    ? new Date(nextMassDate).toLocaleDateString()
-    : "Loading...";
+  //check the time and day of the event
+  const filteredMassTimes = eventName
+    .filter((event) => event.name === selectedEvent)
+    .flatMap((event) => event.time || []);
+
+  const filteredMassSchedule = eventName
+    .filter((event) => event.name === selectedEvent)
+    .flatMap((event) => event.schedule);
+
+  const date = new Date(filteredMassSchedule);
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  const formattedDate = date.toLocaleDateString("en-GB", options);
 
   return (
     <Dialog>
@@ -178,19 +176,13 @@ export default function DialogWalkInRegister() {
           Walk-In Register
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-screen-md h-full lg:h-[42rem] no-scrollbar overflow-y-auto">
+      <DialogContent className="max-w-screen-md h-full lg:h-[44rem] no-scrollbar overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold">Register</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
             Fill up the forms for one-time registration
           </DialogDescription>
         </DialogHeader>
-        <div className="mb-4">
-          <Label className="text-sm font-medium">
-            Next mass will be on:{" "}
-            <span className="font-semibold">{formattedDate}</span>
-          </Label>
-        </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="guardian" className="text-sm font-medium">
@@ -198,7 +190,7 @@ export default function DialogWalkInRegister() {
             </TabsTrigger>
             <TabsTrigger
               value="children"
-              disabled={!isStep1Complete}
+              disabled={!preferredTime}
               className="text-sm font-medium"
             >
               Step 2
@@ -217,18 +209,29 @@ export default function DialogWalkInRegister() {
               <CardContent className="space-y-4">
                 <FormLabel>
                   <Label htmlFor="Event" className="text-sm font-medium">
-                    Please choose an event to attend
+                    Upcoming Events
                   </Label>
-                  <Select>
+                  <Select
+                    onValueChange={(value) => {
+                      setSelectedEvent(value);
+                      setPreferredTime("");
+                    }}
+                  >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select Event" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">Children's Liturgy</SelectItem>
-                      <SelectItem value="dark">Other event</SelectItem>
+                      {eventName.map((event, index) => (
+                        <SelectItem key={index} value={event.name}>
+                          {event.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormLabel>
+                <Label htmlFor="Schedule" className="text-sm font-medium">
+                  {selectedEvent && <span>Schedule: {formattedDate}</span>}
+                </Label>
                 <FormLabel>
                   <Label
                     htmlFor="preferredtime"
@@ -239,12 +242,13 @@ export default function DialogWalkInRegister() {
                   <Select
                     onValueChange={(value) => setPreferredTime(value)}
                     value={preferredTime}
+                    disabled={!selectedEvent}
                   >
                     <SelectTrigger className="mt-1 w-48">
                       <SelectValue placeholder="Select Time" />
                     </SelectTrigger>
                     <SelectContent>
-                      {formattedTimes.map((time, index) => (
+                      {filteredMassTimes.map((time, index) => (
                         <SelectItem key={index} value={time}>
                           {time}
                         </SelectItem>
@@ -269,17 +273,16 @@ export default function DialogWalkInRegister() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl font-semibold">
-                  Children Information
+                  Required Information
                 </CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">
-                  Please provide your child's information. You can add multiple
-                  children.
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                <Label htmlFor="lastName" className="text-md font-medium">
+                  Add Parent/Carer
+                </Label>
                 <div className="flex flex-col md:flex-row gap-x-4">
                   <FormLabel>
-                    <Label htmlFor="lastName" className="text-sm font-medium">
+                    <Label htmlFor="firstName" className="text-sm font-medium">
                       Last Name
                     </Label>
                     <Input
@@ -304,20 +307,6 @@ export default function DialogWalkInRegister() {
                       className="mt-1"
                     />
                   </FormLabel>
-                  {/* <FormLabel>
-                    <Label htmlFor="telephone" className="text-sm font-medium">
-                      Telephone
-                    </Label>
-                    <Input
-                      id="telephone"
-                      type="number"
-                      value={guardianTelephone}
-                      onChange={(e) => setGuardianTelephone(e.target.value)}
-                      placeholder="123-456-7890"
-                      required
-                      className="mt-1"
-                    />
-                  </FormLabel> */}
                 </div>
                 {children.map((child, index) => (
                   <div
@@ -326,7 +315,11 @@ export default function DialogWalkInRegister() {
                   >
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-semibold">
-                        Child {index + 1}
+                        Add Child/Children
+                        <span className="block text-black text-xs font-normal">
+                          Please provide your child's information. You can add
+                          multiple children
+                        </span>
                       </h4>
                       <Button
                         type="button"
@@ -349,6 +342,7 @@ export default function DialogWalkInRegister() {
                         <Input
                           id={`childrenLastName_${index}`}
                           type="text"
+                          placeholder="Children's Last Name"
                           value={child.lastName}
                           onChange={(e) =>
                             handleChangeChild(index, "lastName", e.target.value)
@@ -367,6 +361,7 @@ export default function DialogWalkInRegister() {
                         <Input
                           id={`childrenFirstName_${index}`}
                           type="text"
+                          placeholder="Children's First Name"
                           value={child.firstName}
                           onChange={(e) =>
                             handleChangeChild(
@@ -381,17 +376,22 @@ export default function DialogWalkInRegister() {
                       </FormLabel>
                       <FormLabel>
                         <Label
-                          htmlFor={`age_${index}`}
+                          htmlFor={`telephone_${index}`}
                           className="text-sm font-medium"
                         >
                           Telephone
                         </Label>
                         <Input
-                          id={`age_${index}`}
+                          id={`telephone_${index}`}
                           type="number"
-                          value={child.age}
+                          placeholder="Guardian's Telephone"
+                          value={child.telephone}
                           onChange={(e) =>
-                            handleChangeChild(index, "age", e.target.value)
+                            handleChangeChild(
+                              index,
+                              "telephone",
+                              e.target.value
+                            )
                           }
                           className="mt-1"
                           required
@@ -412,9 +412,7 @@ export default function DialogWalkInRegister() {
           </TabsContent>
         </Tabs>
         {error && (
-          <p className="text-red-500 text-center md:text-end">
-            Please fill all the fields
-          </p>
+          <p className="text-red-500 text-center md:text-end">{error}</p>
         )}
         <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 items-center gap-2">
           <DialogClose asChild>
