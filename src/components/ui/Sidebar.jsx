@@ -10,7 +10,7 @@ export default function Sidebar({ children }) {
         <div className='flex h-full flex-col justify-between py-6 px-4'>
           <div className='space-y-6'>
             <Link to='#' className='flex items-center gap-2 font-bold'>
-              <span className='text-lg'>Church Attendance</span>
+              <span className='text-lg'>Management Centre</span>
             </Link>
             <nav className='space-y-1'>
               <Link
