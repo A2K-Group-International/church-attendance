@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AdminDashboard from "./pages/AdminDashboard";
 import Attendance from "./pages/Attendance";
@@ -7,6 +8,8 @@ import UsersPage from "./pages/UsersPage";
 import AdminSchedule from "./pages/AdminNewSchedule";
 import FamilyPage from "./pages/FamilyPage";
 import AdminNewSchedule from "./pages/AdminNewSchedule";
+import EventsPage from './pages/EventsPage';
+
 
 function App() {
   return (
@@ -18,6 +21,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/events-page'
+          element={
+            <ProtectedRoute>
+              <EventsPage />
             </ProtectedRoute>
           }
         />

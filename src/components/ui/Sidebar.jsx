@@ -1,9 +1,39 @@
+import { useEffect, useState } from 'react';
 import { Button } from './button';
 import { Sheet, SheetTrigger, SheetContent } from './sheet';
 import { Link } from 'react-router-dom';
 import Logout from '../../authentication/Logout';
+import { useUser } from '@/authentication/useUser';
+import { getUserRole } from '@/services/apiAuth';
 
 export default function Sidebar({ children }) {
+  const { user } = useUser();
+  const [userRole, setUserRole] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user.id) {
+        try {
+          const role = await getUserRole(user.id);
+          setUserRole(role);
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        } finally {
+          setLoading(false); // Set loading to false after fetching
+        }
+      }
+    };
+    fetchUserRole();
+  }, [user.id]);
+
+  console.log('User Role is: ' + userRole); // Log the fetched user role
+
+  // Render loading indicator if still fetching
+  if (loading) {
+    return <div>Loading...</div>; // Replace with a more stylish loading indicator if needed
+  }
+
   return (
     <div className='flex h-screen w-full'>
       <div className='hidden lg:block lg:w-64 lg:shrink-0 lg:border-r lg:bg-gray-100 dark:lg:bg-gray-800'>
@@ -20,34 +50,39 @@ export default function Sidebar({ children }) {
                 <HomeIcon className='h-5 w-5' />
                 Home
               </Link>
-              <Link
-                to='/attendance'
-                className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-              >
-                <UsersIcon className='h-5 w-5' />
-                Attendance
-              </Link>
-              {/* <Link
-                to='/family'
-                className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-              >
-                <UsersIcon className='h-5 w-5' />
-                Family
-              </Link> */}
-              <Link
-                to='/users'
-                className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-              >
-                <UsersIcon className='h-5 w-5' />
-                Users
-              </Link>
-              <Link
-                to='/schedule'
-                className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-              >
-                <UsersIcon className='h-5 w-5' />
-                Schedule
-              </Link>
+              {userRole === 'admin' ? (
+                <>
+                  <Link
+                    to='/attendance'
+                    className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                  >
+                    <UsersIcon className='h-5 w-5' />
+                    Attendance
+                  </Link>
+                  <Link
+                    to='/users'
+                    className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                  >
+                    <UsersIcon className='h-5 w-5' />
+                    Users
+                  </Link>
+                  <Link
+                    to='/schedule'
+                    className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                  >
+                    <UsersIcon className='h-5 w-5' />
+                    Schedule
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  to='/family'
+                  className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                >
+                  <UsersIcon className='h-5 w-5' />
+                  Family
+                </Link>
+              )}
             </nav>
           </div>
           <div className='space-y-4'>
@@ -79,34 +114,39 @@ export default function Sidebar({ children }) {
                         <HomeIcon className='h-5 w-5' />
                         Home
                       </Link>
-                      {/* <Link
-                        to='/family'
-                        className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-                      >
-                        <UsersIcon className='h-5 w-5' />
-                        Family
-                      </Link> */}
-                      <Link
-                        to='/attendance'
-                        className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-                      >
-                        <UsersIcon className='h-5 w-5' />
-                        Attendance
-                      </Link>
-                      <Link
-                        to='/users'
-                        className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-                      >
-                        <UsersIcon className='h-5 w-5' />
-                        Users
-                      </Link>
-                      <Link
-                        to='/schedule'
-                        className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-                      >
-                        <UsersIcon className='h-5 w-5' />
-                        Schedule
-                      </Link>
+                      {userRole === 'admin' ? (
+                        <>
+                          <Link
+                            to='/attendance'
+                            className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                          >
+                            <UsersIcon className='h-5 w-5' />
+                            Attendance
+                          </Link>
+                          <Link
+                            to='/users'
+                            className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                          >
+                            <UsersIcon className='h-5 w-5' />
+                            Users
+                          </Link>
+                          <Link
+                            to='/schedule'
+                            className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                          >
+                            <UsersIcon className='h-5 w-5' />
+                            Schedule
+                          </Link>
+                        </>
+                      ) : (
+                        <Link
+                          to='/family'
+                          className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
+                        >
+                          <UsersIcon className='h-5 w-5' />
+                          Family
+                        </Link>
+                      )}
                     </nav>
                   </div>
                   <div className='space-y-4'>
