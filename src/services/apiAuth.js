@@ -87,3 +87,18 @@ export async function requestAccount({ name, email, password, contactNumber }) {
 
   return data;
 }
+
+export async function getUserRole(id) {
+  const { data, error } = await supabase
+    .from('user_list')
+    .select('user_role')
+    .eq('user_uuid', id) // Assuming you're using Supabase auth
+    .single();
+
+  console.log('userROleFetched');
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data?.user_role;
+}
