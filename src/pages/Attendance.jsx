@@ -20,6 +20,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import * as XLSX from "xlsx"; // Import xlsx library
+import { saveAs } from "file-saver"; // Import file-saver for downloading files
+import downloadIcon from "../assets/svg/download.svg"
 
 const headers = [
   "Action",
@@ -144,6 +147,31 @@ export default function Attendance() {
     }
   };
 
+  const handleExportExcel = () => {
+    const exportData = data.map((item) => ({
+      "#": item.id,
+      "Children Name": `${item.children_first_name} ${item.children_last_name}`,
+      "Guardian Name": `${item.guardian_first_name} ${item.guardian_last_name}`,
+      Telephone: item.guardian_telephone,
+      Status: item.has_attended ? "Attended" : "Pending",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData); // Convert JSON to worksheet
+    const workbook = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance"); // Append the worksheet to the workbook
+
+    // Generate buffer
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const dataBlob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    saveAs(dataBlob, "attendance_records.xlsx"); // Use file-saver to download the file
+  };
+
   const rows = data.map((item, index) => [
     <Switch
       key={item.id}
@@ -219,6 +247,14 @@ export default function Attendance() {
               <option value="pending">Pending</option>
             </select>
           </div>
+          {/* Export Excel button */}
+          <Button
+            onClick={handleExportExcel}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            <img src={downloadIcon} alt="Download Icon" />
+          </Button>
         </div>
         <div className="bg-card rounded-lg shadow">
           {loading ? (
