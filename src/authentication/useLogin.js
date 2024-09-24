@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login as loginApi } from "../services/apiAuth"; // Assuming this handles authentication
-import supabase from "../utils/supabase"; // Make sure to import your Supabase client
-import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { login as loginApi } from '../services/apiAuth'; // Assuming this handles authentication
+import supabase from '../utils/supabase'; // Make sure to import your Supabase client
+import { useNavigate } from 'react-router-dom';
 
 export function useLogin() {
   const queryClient = useQueryClient();
@@ -17,28 +17,31 @@ export function useLogin() {
       return user;
     },
     onSuccess: async (user) => {
-      queryClient.setQueriesData(["user"], user);
+      queryClient.setQueriesData(['user'], user);
 
       const { data: userData, error: userError } = await supabase
-        .from("user_list")
-        .select("user_role")
-        .eq("user_uuid", user.id)
+        .from('user_list')
+        .select('user_role,user_id')
+        .eq('user_uuid', user.id)
         .single();
 
       if (userError || !userData) {
-        console.error(userError?.message || "Could not fetch user data.");
+        console.error(userError?.message || 'Could not fetch user data.');
         return;
       }
 
+      // Store user data in query cache
+      queryClient.setQueryData(['userData'], userData); // Save userData in cache
+
       // Check user_role and navigate accordingly
-      if (userData.user_role === "admin") {
-        navigate("/admin-dashboard", { replace: true });
+      if (userData.user_role === 'admin') {
+        navigate('/admin-dashboard', { replace: true });
       } else {
-        navigate("/events-page", { replace: true });
+        navigate('/events-page', { replace: true });
       }
     },
     onError: (err) => {
-      console.log("Login error:", err.message);
+      console.log('Login error:', err.message);
     },
   });
 

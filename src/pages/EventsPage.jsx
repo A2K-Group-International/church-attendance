@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '@/components/ui/Sidebar';
 import {
   Card,
@@ -9,27 +9,104 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-
-const eventItems = [
-  {
-    title: 'Event Title 1',
-    content: 'This is a brief description of event 1.',
-  },
-  {
-    title: 'Event Title 2',
-    content: 'This is a brief description of event 2.',
-  },
-  {
-    title: 'Event Title 3',
-    content: 'This is a brief description of event 3.',
-  },
-  {
-    title: 'Event Title 4',
-    content: 'This is a brief description of event 4.',
-  },
-];
+import supabase from '@/utils/supabase';
+import FamilyMembersDialog from '@/components/ui/FamilyMembersDialog';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function EventsPage() {
+  const [eventItems, setEventItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const queryClient = useQueryClient();
+
+  const userData = queryClient.getQueryData(['userData']);
+  console.log('user data', userData);
+
+  const formatTime = (timeStr) => {
+    if (!timeStr) return 'Invalid time'; // Handle undefined or invalid time
+    const [time, timezone] = timeStr.split('+');
+    const [hours, minutes] = time.split(':');
+    const hours24 = parseInt(hours, 10);
+    const ampm = hours24 >= 12 ? 'PM' : 'AM';
+    const hours12 = hours24 % 12 || 12;
+    return `${hours12}:${minutes} ${ampm}`;
+  };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('schedule')
+          .select('*')
+          .order('schedule', { ascending: true });
+
+        if (error) throw error;
+
+        const formattedEvents = data.map((event) => {
+          const eventTime = event.time;
+          return {
+            id: event.id,
+            title: event.name,
+            content: event.description,
+            date: new Date(event.schedule).toLocaleDateString(),
+            time:
+              eventTime && eventTime.length === 2
+                ? `${formatTime(eventTime[0])} - ${formatTime(eventTime[1])}`
+                : 'Time not available', // Handle cases where time is not defined correctly
+          };
+        });
+
+        setEventItems(formattedEvents);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const fetchFamilyMembers = async () => {
+    if (!userData) {
+      console.error('User data not available');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('family_list')
+        .select('*')
+        .eq('guardian_id', userData.user_id);
+
+      if (error) throw error;
+
+      setFamilyMembers(data);
+      console.log(data);
+    } catch (error) {
+      console.error('Error fetching family members:', error);
+    }
+  };
+
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    fetchFamilyMembers();
+    setDialogOpen(true);
+  };
+
+  if (loading) {
+    return (
+      <Sidebar>
+        <main className='p-4 lg:p-8'>
+          <h1 className='text-2xl font-bold'>Events</h1>
+          <p className='text-gray-500 dark:text-gray-400'>Loading events...</p>
+        </main>
+      </Sidebar>
+    );
+  }
+
   return (
     <Sidebar>
       <main className='p-4 lg:p-8'>
@@ -42,18 +119,43 @@ export default function EventsPage() {
         </div>
 
         <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8'>
-          {eventItems.map((item, index) => (
-            <Card key={index} className='p-4 shadow-lg'>
+          {eventItems.map((item) => (
+            <Card
+              key={item.id}
+              className='p-4 shadow-lg'
+              onClick={() => handleEventClick(item)}
+            >
               <CardHeader>
                 <CardTitle>{item.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>{item.content}</CardDescription>
+                <CardDescription className='flex flex-col'>
+                  <p>{item.content}</p>
+                  <div className='mt-4'>
+                    <strong className='text-lg'>Date:</strong>
+                    <p className='text-gray-700 dark:text-gray-300'>
+                      {item.date}
+                    </p>
+                  </div>
+                  <div className='mt-2'>
+                    <strong className='text-lg'>Time:</strong>
+                    <p className='text-gray-700 dark:text-gray-300'>
+                      {item.time}
+                    </p>
+                  </div>
+                </CardDescription>
               </CardContent>
             </Card>
           ))}
         </div>
       </main>
+
+      <FamilyMembersDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        familyMembers={familyMembers}
+        selectedEvent={selectedEvent}
+      />
     </Sidebar>
   );
 }
