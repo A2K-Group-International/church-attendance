@@ -148,15 +148,17 @@ export default function Attendance() {
   };
 
   const handleExportExcel = () => {
-    const exportData = data.map((item) => ({
-      "#": item.id,
-      "Children Name": `${item.children_first_name} ${item.children_last_name}`,
-      "Guardian Name": `${item.guardian_first_name} ${item.guardian_last_name}`,
-      Telephone: item.guardian_telephone,
-      Status: item.has_attended ? "Attended" : "Pending",
-    }));
+    const attendedData = data
+      .filter((item) => item.has_attended) // Filter only attended entries
+      .map((item) => ({
+        "#": item.id,
+        "Children Name": `${item.children_first_name} ${item.children_last_name}`,
+        "Guardian Name": `${item.guardian_first_name} ${item.guardian_last_name}`,
+        Telephone: item.guardian_telephone,
+        Status: "Attended", // Since we are filtering attended, we can hardcode this
+      }));
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData); // Convert JSON to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(attendedData); // Convert JSON to worksheet
     const workbook = XLSX.utils.book_new(); // Create a new workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance"); // Append the worksheet to the workbook
 

@@ -61,7 +61,7 @@ export async function fetchTime(selectedDate) {
     throw new Error('Failed to load schedule.');
   }
 }
-export async function fetchAllEvents() {
+export async function fetchAllEvents(id) {
   try {
     const { data, error } = await supabase
       .from("schedule")

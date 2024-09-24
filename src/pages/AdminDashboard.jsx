@@ -38,7 +38,7 @@ export default function ChurchAttendanceDashboard() {
     <Sidebar>
       <main className="p-4 lg:p-8">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-lg font-bold">Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400">
             Monthly attendance data.
           </p>

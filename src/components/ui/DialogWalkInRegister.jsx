@@ -31,6 +31,7 @@ import {
 import FormLabel from "../ui/FormLabel";
 import supabase from "../../utils/supabase";
 import { fetchAllEvents } from "@/services/apiAuth";
+import ReactInputMask from "react-input-mask";
 
 export default function DialogWalkInRegister() {
   const [error, setError] = useState("");
