@@ -13,22 +13,21 @@ export default function Sidebar({ children }) {
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      try {
-        const role = await getUserRole(user.id);
-        setUserRole(role);
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      } finally {
-        setLoading(false); // Set loading to false after fetching
+      if (user.id) {
+        try {
+          const role = await getUserRole(user.id);
+          setUserRole(role);
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        } finally {
+          setLoading(false); // Set loading to false after fetching
+        }
       }
     };
-
-    if (user.id) {
-      fetchUserRole();
-    }
+    fetchUserRole();
   }, [user.id]);
 
-  console.log('User Role is: ' + userRole); // This will log the fetched user role
+  console.log('User Role is: ' + userRole); // Log the fetched user role
 
   // Render loading indicator if still fetching
   if (loading) {
@@ -41,16 +40,9 @@ export default function Sidebar({ children }) {
         <div className='flex h-full flex-col justify-between py-6 px-4'>
           <div className='space-y-6'>
             <Link to='#' className='flex items-center gap-2 font-bold'>
-              <span className='text-lg'>Church Attendance</span>
+              <span className='text-xl'>Management Centre</span>
             </Link>
             <nav className='space-y-1'>
-              <Link
-                to='/events-page'
-                className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
-              >
-                <HomeIcon className='h-5 w-5' />
-                Events
-              </Link>
               <Link
                 to='/admin-dashboard'
                 className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-50'
@@ -102,7 +94,7 @@ export default function Sidebar({ children }) {
         <header className='sticky top-0 z-10 border-b bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900 lg:hidden'>
           <div className='flex items-center justify-between'>
             <Link to='#' className='flex items-center gap-2 font-bold'>
-              <span className='text-lg'>Church Attendance</span>
+              <span className='text-xl'>Management Centre</span>
             </Link>
             <Sheet>
               <SheetTrigger asChild>

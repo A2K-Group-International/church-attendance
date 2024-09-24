@@ -1,5 +1,3 @@
-"use client";
-
 import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import Sidebar from "@/components/ui/Sidebar";
@@ -9,11 +7,9 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
@@ -21,20 +17,16 @@ export const description = "Church Attendance Bar Chart";
 
 // Church attendance data for adults and children at events
 const chartData = [
-  { month: "January", adults: 186, children: 80 },
-  { month: "February", adults: 305, children: 200 },
-  { month: "March", adults: 237, children: 120 },
-  { month: "April", adults: 73, children: 190 },
-  { month: "May", adults: 209, children: 130 },
-  { month: "June", adults: 214, children: 140 },
+  { month: "January",  children: 80 },
+  { month: "February", children: 200 },
+  { month: "March",  children: 120 },
+  { month: "April", children: 190 },
+  { month: "May",  children: 130 },
+  { month: "June", children: 140 },
 ];
 
 // Chart configuration
 const chartConfig = {
-  adults: {
-    label: "Adults",
-    color: "hsl(var(--chart-1))",
-  },
   children: {
     label: "Children",
     color: "hsl(var(--chart-2))",
@@ -46,9 +38,9 @@ export default function ChurchAttendanceDashboard() {
     <Sidebar>
       <main className="p-4 lg:p-8">
         <div>
-          <h1 className="text-2xl font-bold">Church Attendance Dashboard</h1>
+          <h1 className="text-lg font-bold">Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Monthly attendance data for church.
+            Monthly attendance data.
           </p>
         </div>
 
@@ -66,7 +58,6 @@ export default function ChurchAttendanceDashboard() {
                     <YAxis />
                     <Tooltip content={<ChartTooltipContent indicator="dashed" />} />
                     <Legend />
-                    <Bar dataKey="adults" fill={chartConfig.adults.color} name={chartConfig.adults.label} />
                     <Bar dataKey="children" fill={chartConfig.children.color} name={chartConfig.children.label} />
                   </BarChart>
                 </ResponsiveContainer>

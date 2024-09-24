@@ -61,6 +61,21 @@ export async function fetchTime(selectedDate) {
     throw new Error('Failed to load schedule.');
   }
 }
+export async function fetchAllEvents(id) {
+  try {
+    const { data, error } = await supabase
+      .from("schedule")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching events:", error.message);
+    throw new Error("Failed to load events.");
+  }
+}
 
 // Insert new schedule
 export async function insertNewSchedule(schedule, time) {
