@@ -58,6 +58,8 @@ export default function EventsPage() {
           };
         });
 
+        console.log(data);
+
         setEventItems(formattedEvents);
       } catch (error) {
         console.error('Error fetching events:', error);

@@ -1,6 +1,6 @@
-import { useForm } from "react-hook-form";
-import Sidebar from "@/components/ui/Sidebar";
-import { Button } from "@/components/ui/button";
+import { useForm } from 'react-hook-form';
+import Sidebar from '@/components/ui/Sidebar';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,17 +10,17 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import supabase from "@/utils/supabase";
-import { Calendar } from "@/components/ui/calendar";
-import Table from "../layout/Table";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import supabase from '@/utils/supabase';
+import { Calendar } from '@/components/ui/calendar';
+import Table from '../layout/Table'; // Assuming Table is your custom table component
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
   Pagination,
   PaginationContent,
@@ -28,14 +28,14 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { format } from "date-fns";
-import { useState, useEffect, useCallback } from "react";
+} from '@/components/ui/pagination';
+import { format } from 'date-fns';
+import { useState, useEffect, useCallback } from 'react';
 
-const headers = ["Event Name", "Date", "Time"];
+const headers = ['Event Name', 'Date', 'Time', 'Description'];
 
 export default function AdminNewSchedule() {
-  const [time, setTime] = useState([""]);
+  const [time, setTime] = useState(['']);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [events, setEvents] = useState([]);
@@ -65,30 +65,31 @@ export default function AdminNewSchedule() {
     if (!selectedDate) return;
 
     try {
-      const { error } = await supabase.from("schedule").insert([
+      const { error } = await supabase.from('schedule').insert([
         {
           name: data.name,
           schedule: selectedDate,
           time: time,
+          description: data.description,
         },
       ]);
 
       if (error) {
-        console.error("Error inserting data:", error);
+        console.error('Error inserting data:', error);
       } else {
-        alert("Event created successfully!");
+        alert('Event created successfully!');
         resetForm();
         setIsDialogOpen(false);
         fetchEvents();
       }
     } catch (err) {
-      console.error("Unexpected error:", err);
+      console.error('Unexpected error:', err);
     }
   };
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    setValue("schedule", date);
+    setValue('schedule', date);
   };
 
   const fetchEvents = useCallback(async () => {
@@ -101,8 +102,8 @@ export default function AdminNewSchedule() {
         error,
         count,
       } = await supabase
-        .from("schedule")
-        .select("*", { count: "exact" })
+        .from('schedule')
+        .select('*', { count: 'exact' })
         .range(
           (currentPage - 1) * itemsPerPage,
           currentPage * itemsPerPage - 1
@@ -113,8 +114,8 @@ export default function AdminNewSchedule() {
       setTotalPages(Math.ceil(count / itemsPerPage));
       setEvents(fetchedData);
     } catch (err) {
-      setError("Error fetching events. Please try again.");
-      console.error("Error fetching events:", err);
+      setError('Error fetching events. Please try again.');
+      console.error('Error fetching events:', err);
     } finally {
       setLoading(false);
     }
@@ -125,21 +126,31 @@ export default function AdminNewSchedule() {
   }, [currentPage, fetchEvents]);
 
   const formatTime = (timeString) => {
-    if (!timeString) return "N/A";
-    const [hours, minutes] = timeString.split(":");
+    if (!timeString) return 'N/A';
+    const [hours, minutes] = timeString.split(':');
     return `${hours}:${minutes}`;
   };
 
   const rows = events.map((event) => [
     event.name,
-    format(new Date(event.schedule), "PPP"),
+    format(new Date(event.schedule), 'PPP'),
     event.time && event.time.length > 0
-      ? event.time.map((t) => formatTime(t)).join(", ")
-      : "N/A",
+      ? event.time.map((t) => formatTime(t)).join(', ')
+      : 'N/A',
+    <div
+      style={{
+        maxWidth: '200px', // Adjust the width to your preference
+        maxHeight: '100px', // Adjust the height to your preference
+        overflow: 'auto', // Enable scrolling if the content overflows
+        whiteSpace: 'pre-wrap', // Keep the newlines in the description
+      }}
+    >
+      {event.description || 'N/A'}
+    </div>, // Limit width and height for the description field
   ]);
 
   const handleAddTimeInput = () => {
-    setTime([...time, ""]);
+    setTime([...time, '']);
   };
 
   const handleRemoveTimeInput = (index) => {
@@ -156,47 +167,47 @@ export default function AdminNewSchedule() {
 
   return (
     <Sidebar>
-      <main className="p-4 lg:p-8 space-y-6">
+      <main className='p-4 lg:p-8 space-y-6'>
         <header>
-          <h1 className="text-2xl font-bold">Schedule</h1>
+          <h1 className='text-2xl font-bold'>Schedule</h1>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="mt-2">Create Event</Button>
+              <Button className='mt-2'>Create Event</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className='sm:max-w-[425px]'>
               <DialogHeader>
                 <DialogTitle>Create Event</DialogTitle>
                 <DialogDescription>
                   Schedule an upcoming event.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Event Name</Label>
-                  <Input id="name" {...register("name", { required: true })} />
+              <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='name'>Event Name</Label>
+                  <Input id='name' {...register('name', { required: true })} />
                   {errors.name && (
-                    <p className="text-red-500 text-sm">
+                    <p className='text-red-500 text-sm'>
                       Event name is required
                     </p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="schedule">Date</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='schedule'>Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
-                        className="w-full justify-start"
+                        variant='outline'
+                        className='w-full justify-start'
                       >
                         {selectedDate
-                          ? format(selectedDate, "PPP")
-                          : "Please select a date"}
+                          ? format(selectedDate, 'PPP')
+                          : 'Please select a date'}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className='w-auto p-0'>
                       <Calendar
-                        mode="single"
+                        mode='single'
                         selected={selectedDate}
                         onSelect={handleDateSelect}
                         initialFocus
@@ -204,36 +215,48 @@ export default function AdminNewSchedule() {
                     </PopoverContent>
                   </Popover>
                   {isSubmitted && !selectedDate && (
-                    <p className="text-red-500 text-sm">Date is required</p>
+                    <p className='text-red-500 text-sm'>Date is required</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="time">Time</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='description'>Description</Label>
+                  <Input
+                    id='description'
+                    as='textarea'
+                    rows={3}
+                    {...register('description')}
+                    className='w-full'
+                    placeholder='Event description (optional)'
+                  />
+                </div>
+
+                <div className='space-y-2'>
+                  <Label htmlFor='time'>Time</Label>
                   {time.map((t, index) => (
-                    <div key={index} className="flex space-x-2 items-center">
+                    <div key={index} className='flex space-x-2 items-center'>
                       <Input
-                        type="time"
+                        type='time'
                         value={t}
                         onChange={(e) =>
                           handleChangeTime(index, e.target.value)
                         }
-                        className="flex-grow"
+                        className='flex-grow'
                       />
                       <Button
-                        type="button"
-                        variant="outline"
+                        type='button'
+                        variant='outline'
                         onClick={() => handleRemoveTimeInput(index)}
-                        className="shrink-0"
+                        className='shrink-0'
                       >
                         Remove
                       </Button>
                     </div>
                   ))}
                   <Button
-                    type="button"
+                    type='button'
                     onClick={handleAddTimeInput}
-                    className="w-full"
+                    className='w-full'
                   >
                     Add more time
                   </Button>
@@ -241,11 +264,11 @@ export default function AdminNewSchedule() {
 
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button type="button" variant="secondary">
+                    <Button type='button' variant='secondary'>
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit">Submit</Button>
+                  <Button type='submit'>Submit</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -253,45 +276,44 @@ export default function AdminNewSchedule() {
         </header>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="mt-4 text-muted-foreground">Loading schedule...</p>
+          <div className='flex flex-col items-center justify-center h-64'>
+            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary'></div>
+            <p className='mt-4 text-muted-foreground'>Loading schedule...</p>
           </div>
         ) : error ? (
-          <div className="text-center p-8">
-            <p className="text-destructive">{error}</p>
+          <div className='text-center p-8'>
+            <p className='text-destructive'>{error}</p>
           </div>
-        ) : rows.length > 0 ? (
-          <div className="space-y-4">
+        ) : events.length > 0 ? (
+          <div>
             <Table headers={headers} rows={rows} />
-            <Pagination>
+            <Pagination className='mt-4'>
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
-                    href="#"
+                    href='#'
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage > 1) setCurrentPage((prev) => prev - 1);
                     }}
                   />
                 </PaginationItem>
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <PaginationItem key={index}>
+                {[...Array(totalPages).keys()].map((pageNumber) => (
+                  <PaginationItem key={pageNumber}>
                     <PaginationLink
-                      href="#"
-                      isActive={currentPage === index + 1}
+                      href='#'
                       onClick={(e) => {
                         e.preventDefault();
-                        setCurrentPage(index + 1);
+                        setCurrentPage(pageNumber + 1);
                       }}
                     >
-                      {index + 1}
+                      {pageNumber + 1}
                     </PaginationLink>
                   </PaginationItem>
                 ))}
                 <PaginationItem>
                   <PaginationNext
-                    href="#"
+                    href='#'
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages)
@@ -303,8 +325,8 @@ export default function AdminNewSchedule() {
             </Pagination>
           </div>
         ) : (
-          <div className="text-center p-8">
-            <p className="text-muted-foreground">No events found.</p>
+          <div className='text-center p-8'>
+            <p className='text-muted-foreground'>No events found.</p>
           </div>
         )}
       </main>
