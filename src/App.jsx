@@ -1,15 +1,14 @@
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import AdminDashboard from "./pages/AdminDashboard";
-import Attendance from "./pages/Attendance";
-import ProtectedRoute from "./authentication/ProtectedRoute";
-import Home from "./pages/Home";
-import UsersPage from "./pages/UsersPage";
-import AdminSchedule from "./pages/AdminNewSchedule";
-import FamilyPage from "./pages/FamilyPage";
-import AdminNewSchedule from "./pages/AdminNewSchedule";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AdminDashboard from './pages/AdminDashboard';
+import Attendance from './pages/Attendance';
+import ProtectedRoute from './authentication/ProtectedRoute';
+import Home from './pages/Home';
+import UsersPage from './pages/UsersPage';
+import AdminSchedule from './pages/AdminNewSchedule';
+import FamilyPage from './pages/FamilyPage';
+import AdminNewSchedule from './pages/AdminNewSchedule';
 import EventsPage from './pages/EventsPage';
-
+import EventInfo from './pages/EventInfo';
 
 function App() {
   return (
@@ -33,6 +32,14 @@ function App() {
           }
         />
         <Route
+          path='/event-info'
+          element={
+            <ProtectedRoute>
+              <EventInfo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path='/attendance'
           element={
             <ProtectedRoute>
@@ -48,7 +55,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-          {/* <Route
+        {/* <Route
           path='/newschedule'
           element={
             <ProtectedRoute>

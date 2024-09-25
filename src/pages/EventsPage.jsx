@@ -10,19 +10,14 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import supabase from '@/utils/supabase';
-import FamilyMembersDialog from '@/components/ui/FamilyMembersDialog';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 export default function EventsPage() {
   const [eventItems, setEventItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [familyMembers, setFamilyMembers] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const queryClient = useQueryClient();
-
-  const userData = queryClient.getQueryData(['userData']);
-  console.log('user data', userData);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const formatTime = (timeStr) => {
     if (!timeStr) return 'Invalid time'; // Handle undefined or invalid time
@@ -71,31 +66,11 @@ export default function EventsPage() {
     fetchEvents();
   }, []);
 
-  const fetchFamilyMembers = async () => {
-    if (!userData) {
-      console.error('User data not available');
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('family_list')
-        .select('*')
-        .eq('guardian_id', userData.user_id);
-
-      if (error) throw error;
-
-      setFamilyMembers(data);
-      console.log(data);
-    } catch (error) {
-      console.error('Error fetching family members:', error);
-    }
-  };
-
   const handleEventClick = (event) => {
-    setSelectedEvent(event);
-    fetchFamilyMembers();
-    setDialogOpen(true);
+    // Save the selected event to the query cache
+    queryClient.setQueryData(['selectedEvent'], event);
+    console.log('Selected event:', event); // Log the selected event
+    navigate('/event-info'); // Redirect to the event info page
   };
 
   if (loading) {
@@ -151,13 +126,6 @@ export default function EventsPage() {
           ))}
         </div>
       </main>
-
-      <FamilyMembersDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        familyMembers={familyMembers}
-        selectedEvent={selectedEvent}
-      />
     </Sidebar>
   );
 }

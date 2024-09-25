@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,70 +9,57 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import supabase from '@/utils/supabase';
 
-export default function FamilyMembersDialog({ open, onClose, selectedEvent }) {
-  const queryClient = useQueryClient();
-  const userData = queryClient.getQueryData(['userData']); // Get user data from query client
-  const [familyMembers, setFamilyMembers] = useState([]); // State to hold family members
-  const [selectedMembers, setSelectedMembers] = useState([]); // State for selected family members
-
-  useEffect(() => {
-    if (open) {
-      fetchFamilyMembers(); // Fetch family members when the dialog opens
-    }
-  }, [open]);
-
-  const fetchFamilyMembers = async () => {
-    if (!userData) {
-      console.error('User data not available');
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('family_list')
-        .select('*')
-        .eq('guardian_id', userData.user_id); // Fetch family members based on guardian ID
-
-      if (error) throw error;
-
-      setFamilyMembers(data);
-      console.log(data); // Log fetched family members for debugging
-    } catch (error) {
-      console.error('Error fetching family members:', error);
-    }
-  };
+export default function EventInfoDialog({
+  open,
+  onClose,
+  event,
+  familyMembers = [], // Default to an empty array if not provided
+}) {
+  const [selectedMembers, setSelectedMembers] = useState([]);
 
   const handleMemberChange = (memberId) => {
-    setSelectedMembers(
-      (prev) =>
-        prev.includes(memberId)
-          ? prev.filter((id) => id !== memberId) // Remove if already selected
-          : [...prev, memberId] // Add to selected members
+    setSelectedMembers((prev) =>
+      prev.includes(memberId)
+        ? prev.filter((id) => id !== memberId)
+        : [...prev, memberId]
     );
   };
 
   const handleSubmit = () => {
-    // Handle the submission of selected family members
     console.log('Selected Members for Event:', selectedMembers);
-    console.log('Selected Event:', selectedEvent);
-    onClose(); // Close the dialog after submission
+    console.log('Selected Event:', event);
+    onClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className='sm:max-w-[425px] p-6'>
+        <img
+          src='https://via.placeholder.com/400x200' // Replace with your image URL
+          alt='Event Placeholder'
+          className='w-full rounded-lg mb-4'
+        />
         <DialogHeader>
           <DialogTitle className='text-lg font-semibold'>
-            Family Members for {selectedEvent?.title}
+            {event?.title}
           </DialogTitle>
           <DialogDescription className='text-gray-800 text-sm mt-1'>
             <div className='font-bold'>
-              Date: <span className='text-black'>{selectedEvent?.date}</span>
+              Date: <span className='text-black'>{event?.date}</span>
             </div>
             <div className='font-bold'>
-              Time: <span className='text-black'>{selectedEvent?.time}</span>
+              Time: <span className='text-black'>{event?.time}</span>
+            </div>
+            {/* Add more detailed event information here */}
+            <div className='mt-2'>
+              <p className='font-bold'>Location:</p>
+              <p>{event?.location}</p> {/* Add location info if available */}
+            </div>
+            <div className='mt-2'>
+              <p className='font-bold'>Description:</p>
+              <p>{event?.description}</p>{' '}
+              {/* Add description info if available */}
             </div>
           </DialogDescription>
         </DialogHeader>
